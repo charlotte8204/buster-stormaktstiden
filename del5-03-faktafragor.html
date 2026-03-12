@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faktafrågor - Testa dig själv - Stormaktstiden</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f1f5f9;--card:#fff;--text:#1e293b;--muted:#64748b;
+  --accent:#2563eb;--success:#16a34a;--danger:#dc2626;--warning:#f59e0b;
+  --sidebar-bg:#1e293b;--sidebar-text:#e2e8f0;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:18px;line-height:1.7;color:var(--text);background:var(--bg);display:flex;min-height:100vh}
+
+.sidebar{width:220px;background:var(--sidebar-bg);color:var(--sidebar-text);padding:20px 0;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;overflow-y:auto}
+.sidebar .logo{padding:0 16px 16px;font-weight:800;font-size:1.1em;border-bottom:1px solid #334155}.sidebar .logo a{color:var(--sidebar-text);text-decoration:none}
+.sidebar nav{padding:12px 0;flex:1}
+.sidebar .section-title{padding:8px 16px;font-size:.7em;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin-top:8px}
+.sidebar a{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#cbd5e1;text-decoration:none;font-size:.85em;transition:background .15s}
+.sidebar a:hover{background:#334155}.sidebar a.active{background:var(--accent);color:#fff;font-weight:600}
+.sidebar a .icon{width:18px;text-align:center;font-size:.85em}.sidebar a.done .icon{color:var(--success)}
+.sidebar .progress-box{padding:12px 16px;border-top:1px solid #334155;margin-top:auto}
+.sidebar .progress-box .bar{height:6px;background:#334155;border-radius:3px;overflow:hidden;margin-top:6px}
+.sidebar .progress-box .bar-fill{height:100%;background:var(--success);border-radius:3px;transition:width .3s}
+.sidebar .progress-box span{font-size:.7em;color:#94a3b8}
+
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 28px;background:var(--card);border-bottom:1px solid #e2e8f0}
+.topbar .breadcrumb{font-size:.8em;color:var(--muted)}.topbar .breadcrumb a{color:var(--accent);text-decoration:none}
+.topbar .points{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--warning);font-size:.95em}
+.topbar .text-controls button{background:none;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.8em;margin-left:4px}
+
+.content-area{flex:1;display:flex;max-width:100%}
+.content{flex:1;padding:28px 32px;max-width:720px}
+.content h1{font-size:1.5em;font-weight:800;margin-bottom:4px;color:var(--sidebar-bg)}
+.content .subtitle{font-size:.85em;color:var(--muted);margin-bottom:20px}
+
+.info-box{background:#eff6ff;border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:16px 0;font-size:.9em}
+
+.question-box{background:var(--card);border:2px solid #e2e8f0;border-radius:var(--radius);padding:20px;margin:20px 0;box-shadow:var(--shadow)}
+.question-box h3{font-size:.95em;margin-bottom:12px;color:var(--sidebar-bg)}
+.question-box .badge{display:inline-block;font-size:.65em;padding:2px 8px;border-radius:4px;font-weight:700;margin-bottom:8px;text-transform:uppercase}
+.badge-e{background:#dcfce7;color:var(--success)}
+
+.options{display:flex;flex-direction:column;gap:8px}
+.option-btn{display:block;width:100%;text-align:left;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;background:var(--card);cursor:pointer;font-size:.9em;font-family:inherit;transition:border-color .15s,background .15s}
+.option-btn:hover:not(:disabled){border-color:var(--accent);background:#f0f6ff}
+.option-btn.correct{border-color:var(--success);background:#dcfce7}
+.option-btn.wrong{border-color:var(--danger);background:#fee2e2}
+.option-btn:disabled{cursor:default}
+
+.fill-input{width:220px;padding:8px 12px;border:2px solid #e2e8f0;border-radius:6px;font-family:inherit;font-size:.9em}
+.fill-input:focus{border-color:var(--accent);outline:none}
+.fill-input.correct{border-color:var(--success);background:#dcfce7}
+.fill-input.wrong{border-color:var(--danger);background:#fee2e2}
+.fill-submit{padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-size:.85em;font-weight:600;margin-left:8px}
+
+.feedback{margin-top:12px;padding:12px 16px;border-radius:8px;font-size:.9em;display:none}
+.feedback.show{display:block}
+.feedback.correct{background:#dcfce7;color:#166534}
+.feedback.wrong{background:#fee2e2;color:#991b1b}
+
+.hint-btn{background:none;border:none;color:var(--accent);cursor:pointer;font-size:.8em;margin-top:8px;font-family:inherit;text-decoration:underline}
+.hint-box{margin-top:8px;padding:8px 12px;background:#f0f6ff;border-radius:6px;font-size:.85em;display:none}.hint-box.show{display:block}
+
+.celebration{display:none;text-align:center;padding:12px;margin-top:12px;background:linear-gradient(135deg,#dcfce7,#dbeafe);border-radius:var(--radius);font-weight:600}
+.celebration.show{display:block}
+
+.nav-buttons{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0}
+.nav-btn{padding:10px 24px;border-radius:8px;font-size:.9em;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;border:none;display:inline-flex;align-items:center;gap:6px}
+.nav-btn.secondary{background:#f1f5f9;color:var(--text)}.nav-btn.secondary:hover{background:#e2e8f0}
+.nav-btn.primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25)}.nav-btn.primary:hover{background:#1d4ed8}
+
+.right-panel{width:200px;padding:20px 14px;flex-shrink:0}
+.tip-card{background:#fffacd;border-radius:5px;padding:18px 15px;box-shadow:3px 3px 10px rgba(0,0,0,0.1),0 0 0 1px rgba(0,0,0,0.05);transform:rotate(-2deg);position:relative;margin-bottom:20px;margin-top:12px}
+.tip-card::before{content:"";position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:40px;height:15px;background:rgba(200,180,140,0.6);border-radius:2px}
+.tip-card h4{font-size:13px;font-weight:600;color:#7a6a4a;margin-bottom:10px}
+.tip-card p{font-size:12px;line-height:1.5;color:#6a5a3a}
+
+.pause-btn{position:fixed;bottom:30px;right:30px;background:#c8f0d0;border:none;padding:15px 25px;border-radius:30px;font-family:inherit;font-size:15px;color:var(--text);cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,0.1);transition:all 0.2s ease;z-index:50}
+.pause-btn:hover{transform:scale(1.05);background:#88c498}
+.pause-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
+.pause-overlay.show{display:flex}
+.pause-modal{background:var(--card);border-radius:16px;padding:36px;text-align:center;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.pause-modal h2{font-size:1.3em;margin-bottom:12px}
+.pause-modal p{font-size:.95em;color:var(--muted);margin-bottom:20px}
+.pause-modal button{padding:12px 28px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:1em;cursor:pointer;font-family:inherit;font-weight:600}
+
+@media(max-width:960px){.sidebar{width:180px}.main{margin-left:180px}.right-panel{width:170px}}
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}.right-panel{display:none}.content{padding:20px}}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo"><a href="index.html">Stormaktstiden</a></div>
+  <nav>
+    <div class="section-title">Del 5: Testa dig själv</div>
+    <a href="del5-01-kronologi.html" id="nav-del5-01"><span class="icon">&#9675;</span> Kronologi</a>
+    <a href="del5-02-nyckelbegrepp.html" id="nav-del5-02"><span class="icon">&#9675;</span> Nyckelbegrepp</a>
+    <a href="del5-03-faktafragor.html" class="active" id="nav-del5-03"><span class="icon">&#9654;</span> Faktafrågor</a>
+    <a href="del5-04-forklaringsfragor.html" id="nav-del5-04"><span class="icon">&#9675;</span> Förklaringsfrågor</a>
+    <a href="del5-05-resonemangsfragor.html" id="nav-del5-05"><span class="icon">&#9675;</span> Resonemangsfrågor</a>
+    <a href="del5-06-kallkritik.html" id="nav-del5-06"><span class="icon">&#9675;</span> Källkritik</a>
+    <a href="del5-07-historiebruk.html" id="nav-del5-07"><span class="icon">&#9675;</span> Historiebruk</a>
+    <a href="del5-08-samband.html" id="nav-del5-08"><span class="icon">&#9675;</span> Samband</a>
+    <a href="del5-quiz.html" id="nav-del5-quiz"><span class="icon">&#9675;</span> Resultat</a>
+  </nav>
+  <div class="progress-box">
+    <span>Del 5: <span id="progressText">0/9</span></span>
+    <div class="bar"><div class="bar-fill" id="progressBar" style="width:0%"></div></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="breadcrumb"><a href="index.html">Stormaktstiden</a> &rsaquo; Del 5 &rsaquo; Faktafrågor</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="text-controls"><button onclick="changeSize(-1)">A-</button><button onclick="changeSize(1)">A+</button></div>
+      <div class="points" id="pointsDisplay">0 p</div>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div class="content" id="contentArea">
+      <div class="subtitle">Del 5 &middot; Sida 3 av 9</div>
+      <h1>Faktafrågor (Nivå E)</h1>
+      <p>Grundläggande frågor om stormaktstiden. Varje fråga har en faktaruta så att du inte behöver gå tillbaka.</p>
+
+      <!-- Q1 -->
+      <div class="question-box" id="q0">
+        <span class="badge badge-e">Nivå E</span>
+        <h3>1. Vilken fred avslutade trettioåriga kriget?</h3>
+        <div class="info-box"><strong>Kom ihåg:</strong> Trettioåriga kriget pågick 1618&ndash;1648. Sverige gick med 1630 under Gustav II Adolf. Kriget slutade med en berömd fred som gav Sverige landområden i norra Tyskland (Pommern, Wismar, Bremen).</div>
+        <div class="options">
+          <button class="option-btn" onclick="answerMC(0,0)">Freden i Nystad</button>
+          <button class="option-btn" onclick="answerMC(0,1)">Westfaliska freden</button>
+          <button class="option-btn" onclick="answerMC(0,2)">Freden i Roskilde</button>
+        </div>
+        <button class="hint-btn" onclick="showHint(0)">Ledtråd</button>
+        <div class="hint-box" id="hint0">Freden är uppkallad efter ett område i dagens Tyskland &ndash; Westfalen.</div>
+        <div class="feedback correct" id="fb0c">Rätt! Westfaliska freden 1648 avslutade trettioåriga kriget och gav Sverige stora landområden.</div>
+        <div class="feedback wrong" id="fb0w">Det var Westfaliska freden 1648. Freden i Nystad (1721) avslutade det stora nordiska kriget, och Roskilde (1658) gällde Sverige och Danmark.</div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="question-box" id="q1">
+        <span class="badge badge-e">Nivå E</span>
+        <h3>2. Vad kallas det system där grupper av bönder utrustade och försörjde en soldat?</h3>
+        <div class="info-box"><strong>Kom ihåg:</strong> Karl XI skapade ett system på 1680-talet för att Sverige alltid skulle ha soldater redo. Varje grupp av bönder fick ansvar för en soldat som bodde på ett soldattorp i byn.</div>
+        <div style="display:flex;align-items:center;margin-top:10px">
+          <input class="fill-input" id="fill1" type="text" placeholder="Skriv svaret här...">
+          <button class="fill-submit" onclick="answerFill(1)">Kolla</button>
+        </div>
+        <button class="hint-btn" onclick="showHint(1)">Ledtråd</button>
+        <div class="hint-box" id="hint1">Systemet "delade in" bönderna i grupper &ndash; det kallades för indelnings...</div>
+        <div class="feedback correct" id="fb1c">Rätt! Indelningsverket var en smart lösning som gav Sverige en stående armé.</div>
+        <div class="feedback wrong" id="fb1w">Svaret är "indelningsverket" &ndash; ett system som gjorde att Sverige kunde ha en stor armé trots liten befolkning.</div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="question-box" id="q2">
+        <span class="badge badge-e">Nivå E</span>
+        <h3>3. Vilket slag 1709 var vändpunkten som ledde till stormaktens fall?</h3>
+        <div class="info-box"><strong>Kom ihåg:</strong> Karl XII marscherade in i Ryssland med sin armé. 1709 mötte han den ryska armén i ett avgörande slag i nuvarande Ukraina. Sverige förlorade och Karl XII flydde till Osmanska riket.</div>
+        <div class="options">
+          <button class="option-btn" onclick="answerMC(2,0)">Slaget vid Narva</button>
+          <button class="option-btn" onclick="answerMC(2,1)">Slaget vid Lund</button>
+          <button class="option-btn" onclick="answerMC(2,2)">Slaget vid Poltava</button>
+        </div>
+        <button class="hint-btn" onclick="showHint(2)">Ledtråd</button>
+        <div class="hint-box" id="hint2">Staden börjar på P och ligger i nuvarande Ukraina...</div>
+        <div class="feedback correct" id="fb2c">Rätt! Poltava 1709 &ndash; den stora vändpunkten. Efter det var stormaktstiden i princip över.</div>
+        <div class="feedback wrong" id="fb2w">Det var Poltava 1709. Narva (1700) var en svensk seger, och Lund (1676) var under skånska kriget.</div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="question-box" id="q3">
+        <span class="badge badge-e">Nivå E</span>
+        <h3>4. Vad hette den fred som avslutade det stora nordiska kriget och stormaktstiden?</h3>
+        <div class="info-box"><strong>Kom ihåg:</strong> Det stora nordiska kriget pågick 1700&ndash;1721. Sverige förlorade sina besittningar i Estland, Livland, Ingermanland och delar av Finland. Freden slöts i en stad i Finland.</div>
+        <div class="options">
+          <button class="option-btn" onclick="answerMC(3,0)">Westfaliska freden</button>
+          <button class="option-btn" onclick="answerMC(3,1)">Freden i Roskilde</button>
+          <button class="option-btn" onclick="answerMC(3,2)">Freden i Nystad</button>
+        </div>
+        <button class="hint-btn" onclick="showHint(3)">Ledtråd</button>
+        <div class="hint-box" id="hint3">Staden heter Nystad (Uusikaupunki på finska) och ligger i Finland.</div>
+        <div class="feedback correct" id="fb3c">Rätt! Freden i Nystad 1721 &ndash; då var stormaktstiden officiellt slut.</div>
+        <div class="feedback wrong" id="fb3w">Freden i Nystad 1721 avslutade det stora nordiska kriget. Westfaliska freden (1648) gällde trettioåriga kriget.</div>
+      </div>
+
+      <!-- Q5 -->
+      <div class="question-box" id="q4">
+        <span class="badge badge-e">Nivå E</span>
+        <h3>5. Vad innebar reduktionen som Karl XI genomförde?</h3>
+        <div class="info-box"><strong>Kom ihåg:</strong> Under stormaktens tidiga år hade kungarna gett bort massor av mark och gods till adelsfamiljer som belöning. På 1680-talet bestämde Karl XI att staten behövde pengarna tillbaka.</div>
+        <div class="options">
+          <button class="option-btn" onclick="answerMC(4,0)">Kungen gav mer mark till adeln</button>
+          <button class="option-btn" onclick="answerMC(4,1)">Kronan tog tillbaka gods och inkomster från adeln</button>
+          <button class="option-btn" onclick="answerMC(4,2)">Bönderna fick rösta i riksdagen</button>
+        </div>
+        <button class="hint-btn" onclick="showHint(4)">Ledtråd</button>
+        <div class="hint-box" id="hint4">"Reducera" betyder att minska något. Vem hade för mycket mark?</div>
+        <div class="feedback correct" id="fb4c">Rätt! Reduktionen innebar att kronan tog tillbaka mark från adeln. Det stärkte staten men försvagade de rika adelsfamiljerna rejält.</div>
+        <div class="feedback wrong" id="fb4w">Reduktionen innebar att kronan tog tillbaka gods och inkomster som adeln hade fått. Det var ett sätt att stärka statens ekonomi.</div>
+      </div>
+
+      <!-- Q6 -->
+      <div class="question-box" id="q5">
+        <span class="badge badge-e">Nivå E</span>
+        <h3>6. Fyll i: Karl XII blev kung vid _____ års ålder, år _____.</h3>
+        <div class="info-box"><strong>Kom ihåg:</strong> Karl XII var tonåring när han blev kung. Hans pappa Karl XI dog 1697. Karl XII fick snabbt ta över makten i ett Sverige som var envåldigt styrt.</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <span style="font-size:.9em">Ålder:</span>
+          <input class="fill-input" id="fillAge" type="text" placeholder="?" style="width:60px">
+          <span style="font-size:.9em">År:</span>
+          <input class="fill-input" id="fillYear" type="text" placeholder="?" style="width:80px">
+          <button class="fill-submit" onclick="answerDouble()">Kolla</button>
+        </div>
+        <button class="hint-btn" onclick="showHint(5)">Ledtråd</button>
+        <div class="hint-box" id="hint5">Han var 15 år gammal, och det var på 1690-talet...</div>
+        <div class="feedback correct" id="fb5c">Rätt! Karl XII blev kung vid 15 års ålder, år 1697. Tänk dig att vara 15 och styra ett helt rike!</div>
+        <div class="feedback wrong" id="fb5w">Karl XII blev kung vid 15 års ålder, år 1697.</div>
+      </div>
+
+      <div class="celebration" id="celebration"></div>
+
+      <div class="nav-buttons">
+        <a href="del5-02-nyckelbegrepp.html" class="nav-btn secondary">&larr; Nyckelbegrepp</a>
+        <a href="del5-04-forklaringsfragor.html" class="nav-btn primary" id="nextBtn">Nästa: Förklaringsfrågor &rarr;</a>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="tip-card">
+        <h4>Tips till Buster</h4>
+        <p>E-nivå = visa att du kan grunderna. Du behöver inte resonera djupt här &ndash; bara visa att du har koll på fakta!</p>
+      </div>
+      <div class="tip-card">
+        <h4>Poängstrategi</h4>
+        <p>6 frågor = max 60 poäng. Använd faktarutorna &ndash; de finns där för din skull!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="pause-btn" onclick="showPause()">Jag behöver en paus</button>
+<div class="pause-overlay" id="pauseOverlay">
+  <div class="pause-modal">
+    <h2 id="pauseTitle">Pausdags!</h2>
+    <p id="pauseMsg">Ta en paus!</p>
+    <button onclick="closePause()">Jag är redo igen!</button>
+  </div>
+</div>
+
+<script>
+const PREFIX='buster-so-stormaktstiden-';
+const PAGE_ID='del5-03';
+let startTime=Date.now();
+let hintsUsed=[0,0,0,0,0,0];
+let qResults=[null,null,null,null,null,null];
+let qPoints=[0,0,0,0,0,0];
+let totalPagePoints=0;
+let answered=0;
+
+const MC_CORRECT={0:1, 2:2, 3:2, 4:1};
+
+function answerMC(qIdx, choice){
+  const box=document.getElementById('q'+qIdx);
+  const btns=box.querySelectorAll('.option-btn');
+  if(btns[0].disabled) return;
+  const correct=MC_CORRECT[qIdx]===choice;
+  if(correct){
+    btns[choice].classList.add('correct');
+    document.getElementById('fb'+qIdx+'c').classList.add('show');
+    const pts=hintsUsed[qIdx]>0?5:10;
+    qPoints[qIdx]=pts;totalPagePoints+=pts;addPoints(pts);
+    qResults[qIdx]=true;
+  } else {
+    btns[choice].classList.add('wrong');
+    btns[MC_CORRECT[qIdx]].classList.add('correct');
+    document.getElementById('fb'+qIdx+'w').classList.add('show');
+    qResults[qIdx]=false;qPoints[qIdx]=0;
+  }
+  btns.forEach(b=>b.disabled=true);
+  answered++;checkAllDone();
+}
+
+function answerFill(qIdx){
+  const input=document.getElementById('fill1');
+  const val=input.value.trim().toLowerCase();
+  if(!val) return;
+  const correct=val.includes('indelningsverket')||val.includes('indelnings');
+  if(correct){
+    input.classList.add('correct');
+    document.getElementById('fb1c').classList.add('show');
+    const pts=hintsUsed[1]>0?5:10;
+    qPoints[1]=pts;totalPagePoints+=pts;addPoints(pts);
+    qResults[1]=true;
+  } else {
+    input.classList.add('wrong');
+    document.getElementById('fb1w').classList.add('show');
+    qResults[1]=false;qPoints[1]=0;
+  }
+  input.disabled=true;
+  answered++;checkAllDone();
+}
+
+function answerDouble(){
+  const ageInput=document.getElementById('fillAge');
+  const yearInput=document.getElementById('fillYear');
+  const age=ageInput.value.trim();
+  const year=yearInput.value.trim();
+  if(!age||!year) return;
+  const correct=age==='15'&&year==='1697';
+  if(correct){
+    ageInput.classList.add('correct');yearInput.classList.add('correct');
+    document.getElementById('fb5c').classList.add('show');
+    const pts=hintsUsed[5]>0?5:10;
+    qPoints[5]=pts;totalPagePoints+=pts;addPoints(pts);
+    qResults[5]=true;
+  } else {
+    ageInput.classList.add('wrong');yearInput.classList.add('wrong');
+    document.getElementById('fb5w').classList.add('show');
+    qResults[5]=false;qPoints[5]=0;
+  }
+  ageInput.disabled=true;yearInput.disabled=true;
+  answered++;checkAllDone();
+}
+
+function checkAllDone(){
+  if(answered>=6){
+    const correct=qResults.filter(r=>r===true).length;
+    document.getElementById('celebration').textContent='Klart! '+correct+'/6 rätt. +'+totalPagePoints+' poäng!';
+    document.getElementById('celebration').classList.add('show');
+    markComplete();saveStats();
+  }
+}
+
+function showHint(n){hintsUsed[n]++;document.getElementById('hint'+n).classList.add('show');}
+
+function getPoints(){return parseInt(localStorage.getItem(PREFIX+'points')||'0')}
+function addPoints(n){const p=getPoints()+n;localStorage.setItem(PREFIX+'points',p.toString());updatePointsDisplay();return p;}
+function updatePointsDisplay(){document.getElementById('pointsDisplay').textContent=getPoints()+' p';}
+function getProgress(){return JSON.parse(localStorage.getItem(PREFIX+'progress')||'{}')}
+function markComplete(){const p=getProgress();p[PAGE_ID]=true;localStorage.setItem(PREFIX+'progress',JSON.stringify(p));updateNav();}
+function saveStats(){
+  const stats=JSON.parse(localStorage.getItem(PREFIX+'pageStats')||'{}');
+  stats[PAGE_ID]={time:Math.round((Date.now()-startTime)/1000),results:qResults,points:totalPagePoints,timestamp:new Date().toISOString()};
+  localStorage.setItem(PREFIX+'pageStats',JSON.stringify(stats));
+}
+function updateNav(){
+  const progress=getProgress();
+  const pages=['del5-01','del5-02','del5-03','del5-04','del5-05','del5-06','del5-07','del5-08','del5-quiz'];
+  let done=0;
+  pages.forEach(p=>{const el=document.getElementById('nav-'+p);if(el&&progress[p]){el.classList.add('done');el.querySelector('.icon').innerHTML='&#10003;';done++;}});
+  document.getElementById('progressText').textContent=done+'/'+pages.length;
+  document.getElementById('progressBar').style.width=Math.round(done/pages.length*100)+'%';
+}
+function changeSize(d){const el=document.getElementById('contentArea');const c=parseFloat(getComputedStyle(el).fontSize);el.style.fontSize=(c+d*2)+'px';}
+
+const pauseMsgs=[
+  {t:'Rör på dig!',m:'Gör 10 armhävningar! Eller spring till köket och tillbaka.'},
+  {t:'Andas!',m:'Stäng ögonen. Andas in i 4 sekunder, håll i 4, andas ut i 4.'},
+  {t:'Sträcka!',m:'Ställ dig upp, sträck armarna och böj dig ner mot tårna.'},
+  {t:'Hjärnvila!',m:'Tänk på den bästa skidåkningen du haft. Visualisera hela åket!'}
+];
+function showPause(){const msg=pauseMsgs[Math.floor(Math.random()*pauseMsgs.length)];document.getElementById('pauseTitle').textContent=msg.t;document.getElementById('pauseMsg').textContent=msg.m;document.getElementById('pauseOverlay').classList.add('show');}
+function closePause(){document.getElementById('pauseOverlay').classList.remove('show')}
+
+function checkPrevious(){
+  if(getProgress()[PAGE_ID]){
+    document.getElementById('celebration').textContent='Du har redan klarat denna sida!';
+    document.getElementById('celebration').classList.add('show');
+  }
+}
+
+updatePointsDisplay();updateNav();checkPrevious();
+</script>
+</body>
+</html>

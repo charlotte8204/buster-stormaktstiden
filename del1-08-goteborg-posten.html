@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Göteborg, posten och tidningen - Stormaktstiden</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f1f5f9;--card:#fff;--text:#1e293b;--muted:#64748b;
+  --accent:#2563eb;--success:#16a34a;--danger:#dc2626;--warning:#f59e0b;
+  --sidebar-bg:#1e293b;--sidebar-text:#e2e8f0;
+  --concept:#2563eb;--fact:#16a34a;--person:#dc2626;--funfact:#f59e0b;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:18px;line-height:1.7;color:var(--text);background:var(--bg);display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--sidebar-bg);color:var(--sidebar-text);padding:20px 0;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;overflow-y:auto}
+.sidebar .logo{padding:0 16px 16px;font-weight:800;font-size:1.1em;border-bottom:1px solid #334155}.sidebar .logo a{color:var(--sidebar-text);text-decoration:none}
+.sidebar nav{padding:12px 0;flex:1}
+.sidebar .section-title{padding:8px 16px;font-size:.7em;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin-top:8px}
+.sidebar a{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#cbd5e1;text-decoration:none;font-size:.85em;transition:background .15s}
+.sidebar a:hover{background:#334155}.sidebar a.active{background:var(--accent);color:#fff;font-weight:600}
+.sidebar a .icon{width:18px;text-align:center;font-size:.85em}.sidebar a.done .icon{color:var(--success)}
+.sidebar .progress-box{padding:12px 16px;border-top:1px solid #334155;margin-top:auto}
+.sidebar .progress-box .bar{height:6px;background:#334155;border-radius:3px;overflow:hidden;margin-top:6px}
+.sidebar .progress-box .bar-fill{height:100%;background:var(--success);border-radius:3px;transition:width .3s}
+.sidebar .progress-box span{font-size:.7em;color:#94a3b8}
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 28px;background:var(--card);border-bottom:1px solid #e2e8f0}
+.topbar .breadcrumb{font-size:.8em;color:var(--muted)}.topbar .breadcrumb a{color:var(--accent);text-decoration:none}
+.topbar .points{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--warning);font-size:.95em}
+.topbar .text-controls button{background:none;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.8em;margin-left:4px}
+.content-area{flex:1;display:flex;max-width:100%}
+.content{flex:1;padding:28px 32px;max-width:680px}
+.content h1{font-size:1.5em;font-weight:800;margin-bottom:4px;color:var(--sidebar-bg)}
+.content .subtitle{font-size:.85em;color:var(--muted);margin-bottom:20px}
+.content p{margin-bottom:14px}
+.term{color:var(--concept);font-weight:700;cursor:help;border-bottom:2px dotted var(--concept);position:relative}
+.term:hover::after{content:attr(data-def);position:absolute;bottom:100%;left:0;background:var(--sidebar-bg);color:#fff;padding:8px 12px;border-radius:6px;font-size:.8em;font-weight:400;width:240px;z-index:10;line-height:1.4}
+.fact{color:var(--fact);font-weight:600}.person{color:var(--person);font-weight:600}.year{color:var(--danger);font-weight:700}
+.info-box{background:#eff6ff;border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:16px 0;font-size:.9em}
+.fun-fact{background:#fefce8;border-left:4px solid var(--warning);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:16px 0;font-size:.9em}
+.question-box{background:var(--card);border:2px solid #e2e8f0;border-radius:var(--radius);padding:20px;margin:20px 0;box-shadow:var(--shadow)}
+.question-box h3{font-size:.95em;margin-bottom:12px;color:var(--sidebar-bg)}
+.question-box .badge{display:inline-block;font-size:.65em;padding:2px 8px;border-radius:4px;font-weight:700;margin-bottom:8px;text-transform:uppercase}
+.badge-e{background:#dcfce7;color:var(--success)}.badge-c{background:#dbeafe;color:var(--accent)}.badge-a{background:#fef3c7;color:#92400e}
+.open-answer{width:100%;min-height:70px;padding:12px;border:2px solid #e2e8f0;border-radius:8px;font-family:inherit;font-size:.9em;resize:vertical;line-height:1.5}
+.open-answer:focus{border-color:var(--accent);outline:none}
+.word-count{font-size:.75em;color:var(--muted);margin-top:4px}
+.submit-open{margin-top:10px;padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:.9em;cursor:pointer;font-family:inherit;font-weight:600}
+.submit-open:disabled{opacity:.4;cursor:not-allowed}
+.compare-box{display:none;margin-top:14px;padding:16px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0}
+.compare-box.show{display:block}
+.compare-box h4{font-size:.85em;margin-bottom:8px;color:var(--muted)}
+.compare-box .model-answer{background:#f0fdf4;padding:10px;border-radius:6px;font-size:.9em;margin-top:8px}
+.self-assess{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.self-assess button{padding:8px 16px;border-radius:6px;border:2px solid #e2e8f0;background:var(--card);cursor:pointer;font-family:inherit;font-size:.85em;font-weight:600}
+.self-assess .yes-btn:hover{border-color:var(--success);background:#dcfce7}
+.options{display:flex;flex-direction:column;gap:8px}
+.option-btn{display:block;width:100%;text-align:left;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;background:var(--card);cursor:pointer;font-size:.9em;font-family:inherit;transition:border-color .15s,background .15s}
+.option-btn:hover:not(:disabled){border-color:var(--accent);background:#f0f6ff}
+.option-btn.correct{border-color:var(--success);background:#dcfce7}
+.option-btn.wrong{border-color:var(--danger);background:#fee2e2}
+.option-btn:disabled{cursor:default}
+.feedback{margin-top:12px;padding:12px 16px;border-radius:8px;font-size:.9em;display:none}.feedback.show{display:block}
+.feedback.correct{background:#dcfce7;color:#166534}.feedback.wrong{background:#fee2e2;color:#991b1b}
+.hint-btn{background:none;border:none;color:var(--accent);cursor:pointer;font-size:.8em;margin-top:8px;font-family:inherit;text-decoration:underline}
+.hint-box{margin-top:8px;padding:8px 12px;background:#f0f6ff;border-radius:6px;font-size:.85em;display:none}.hint-box.show{display:block}
+.nav-buttons{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0}
+.nav-btn{padding:10px 24px;border-radius:8px;font-size:.9em;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;border:none;display:inline-flex;align-items:center;gap:6px}
+.nav-btn.secondary{background:#f1f5f9;color:var(--text)}.nav-btn.secondary:hover{background:#e2e8f0}
+.nav-btn.primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25)}.nav-btn.primary:hover{background:#1d4ed8}
+.nav-btn:disabled,.nav-btn.locked{opacity:.35;cursor:not-allowed;pointer-events:none}
+.celebration{display:none;text-align:center;padding:12px;margin-top:12px;background:linear-gradient(135deg,#dcfce7,#dbeafe);border-radius:var(--radius);font-weight:600}.celebration.show{display:block}
+.right-panel{width:200px;padding:20px 14px;flex-shrink:0}
+.tip-card{background:#fffacd;border-radius:5px;padding:18px 15px;box-shadow:3px 3px 10px rgba(0,0,0,0.1),0 0 0 1px rgba(0,0,0,0.05);transform:rotate(-2deg);position:relative;margin-bottom:20px;margin-top:12px}
+.tip-card::before{content:"";position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:40px;height:15px;background:rgba(200,180,140,0.6);border-radius:2px}
+.tip-card h4{font-size:13px;font-weight:600;color:#7a6a4a;margin-bottom:10px}.tip-card p{font-size:12px;line-height:1.5;color:#6a5a3a}
+.pause-btn{position:fixed;bottom:30px;right:30px;background:#c8f0d0;border:none;padding:15px 25px;border-radius:30px;font-family:inherit;font-size:15px;color:var(--text);cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,0.1);transition:all 0.2s ease;z-index:50}.pause-btn:hover{transform:scale(1.05);background:#88c498}
+.pause-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}.pause-overlay.show{display:flex}
+.pause-modal{background:var(--card);border-radius:16px;padding:36px;text-align:center;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.pause-modal h2{font-size:1.3em;margin-bottom:12px}.pause-modal p{font-size:.95em;color:var(--muted);margin-bottom:20px}
+.pause-modal button{padding:12px 28px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:1em;cursor:pointer;font-family:inherit;font-weight:600}
+@media(max-width:960px){.sidebar{width:180px}.main{margin-left:180px}.right-panel{width:170px}}
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}.right-panel{display:none}.content{padding:20px}}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo"><a href="index.html">Stormaktstiden</a></div>
+  <nav>
+    <div class="section-title">Del 1: Vägen till stormakt</div>
+    <a href="del1-01-gustav-ii-adolf.html" id="nav-del1-01"><span class="icon">&#9675;</span> 1. Gustav II Adolf</a>
+    <a href="del1-02-den-nya-armen.html" id="nav-del1-02"><span class="icon">&#9675;</span> 2. Den nya armén</a>
+    <a href="del1-03-koppar-och-jarn.html" id="nav-del1-03"><span class="icon">&#9675;</span> 3. Koppar och järn</a>
+    <a href="del1-04-axel-oxenstierna.html" id="nav-del1-04"><span class="icon">&#9675;</span> 4. Axel Oxenstierna</a>
+    <a href="del1-05-trettioariga-kriget.html" id="nav-del1-05"><span class="icon">&#9675;</span> 5. Trettioåriga kriget</a>
+    <a href="del1-06-vasaskeppet.html" id="nav-del1-06"><span class="icon">&#9675;</span> 6. Vasaskeppet</a>
+    <a href="del1-07-nya-sverige.html" id="nav-del1-07"><span class="icon">&#9675;</span> 7. Nya Sverige</a>
+    <a href="del1-08-goteborg-posten.html" class="active" id="nav-del1-08"><span class="icon">&#9654;</span> 8. Göteborg &amp; Posten</a>
+    <a href="del1-quiz.html" id="nav-del1-quiz"><span class="icon">&#9675;</span> Quiz: Del 1</a>
+  </nav>
+  <div class="progress-box">
+    <span>Del 1: <span id="progressText">0/9</span></span>
+    <div class="bar"><div class="bar-fill" id="progressBar" style="width:0%"></div></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="breadcrumb"><a href="index.html">Stormaktstiden</a> &rsaquo; Del 1 &rsaquo; Göteborg &amp; Posten</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="text-controls"><button onclick="changeSize(-1)">A-</button><button onclick="changeSize(1)">A+</button></div>
+      <div class="points" id="pointsDisplay">0 p</div>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div class="content" id="contentArea">
+      <div class="subtitle">Del 1 &middot; Sida 8 av 8</div>
+      <h1>Göteborg, posten och tidningen</h1>
+
+      <!-- LÄRARTILLÄGG: Holländare i Göteborg — källa: internet -->
+      <p>
+        År <span class="year">1621</span> grundade <span class="person">Gustav II Adolf</span> staden Göteborg. Han anlitade <span class="fact">holländska stadsplanerare</span> som ritade kanaler &ndash; precis som i Amsterdam. Den allra första registrerade medborgaren var holländaren <span class="person">Johan wan Lingen</span>.
+      </p>
+
+      <!-- LÄRARTILLÄGG: Posten 1636 och första tidningen 1645 — källa: internet -->
+      <p>
+        År <span class="year">1636</span> startade Sverige ett organiserat postsystem, initierat av <span class="person">Axel Oxenstierna</span>. Och år <span class="year">1645</span> kom Sveriges &ndash; och <span class="fact">världens &ndash; första regelbundet utgivna tidning</span>: <span class="term" data-def="Världens första regelbundet utgivna tidning, startad i Sverige 1645.">Ordinari Post Tijdender</span>.
+      </p>
+
+      <!-- LÄRARTILLÄGG: Krigspropaganda — källa: internet -->
+      <p>
+        Men information kunde också vara ett vapen. <span class="person">Gustav II Adolf</span> hade en <span class="term" data-def="En organisation som sprider information (ofta vinklad) för att påverka vad folk tycker.">propagandabyrå</span> som tryckte flygblad där han kallades <span class="fact">"Lejonet från Norden"</span>. Trettioåriga kriget kallas ibland <span class="fact">"det första mediekriget"</span> &ndash; tryckta pamfletter användes för att förhärliga den egna sidan och svartmåla fienden.
+      </p>
+
+      <div class="fun-fact">
+        <strong>Tänk på det:</strong> Propaganda finns fortfarande idag &ndash; kan du komma på ett modernt exempel? Reklam, sociala medier, politiska kampanjer...
+      </div>
+
+      <!-- QUESTION -->
+      <div class="question-box" id="questionBox">
+        <span class="badge badge-a">Nivå A</span>
+        <h3>Hur tror du det var för vanliga tyskar när svenska legoknektar plundrade deras stad?</h3>
+        <p style="font-size:.8em;color:var(--muted);margin-bottom:10px">Skriv minst 15 ord. Försök leva dig in i hur det kändes.</p>
+        <textarea class="open-answer" id="openAnswer" placeholder="Skriv ditt svar här..." oninput="updateWC()"></textarea>
+        <div class="word-count" id="wordCount">0 ord (minst 15)</div>
+        <button class="submit-open" id="submitBtn" onclick="submitOpen()" disabled>Visa facit</button>
+        <button class="hint-btn" onclick="showHint(0)">Ledtråd 1</button>
+        <button class="hint-btn" onclick="showHint(1)" style="display:none" id="hintBtn1">Ledtråd 2</button>
+        <div class="hint-box" id="hint0">Tänk på vad du skulle känna om främmande soldater kom till din stad och tog mat, pengar och förstörde saker...</div>
+        <div class="hint-box" id="hint1">Tänk på barn, gamla och sjuka. Hur påverkades de som inte kunde försvara sig?</div>
+        <div class="compare-box" id="compareBox">
+          <h4>Ditt svar:</h4>
+          <div id="studentAnswer" style="background:#f0f6ff;padding:10px;border-radius:6px;font-size:.9em;margin-bottom:8px"></div>
+          <h4>Facit:</h4>
+          <div class="model-answer">Det var fruktansvärt. Vanliga familjer fick se sina hem plundras och brännas. Mat och värdesaker stals. Många blev hemlösa, svalt eller dödades. Barn förlorade föräldrar. Det som var svensk stormaktsglans för den ena sidan var ren terror för den andra. Kriget varade i 30 år &ndash; flera generationer levde hela sina liv i krig.</div>
+          <div class="self-assess" id="selfAssess">
+            <p style="font-size:.85em;margin-bottom:8px;font-weight:600">Fick du med det viktiga?</p>
+            <button class="yes-btn" onclick="selfAssess(true)">Ja</button>
+            <button class="yes-btn" onclick="selfAssess(false)" style="background:#fefce8">Nej, jag missade en del</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="celebration" id="celebration">Bra jobbat, Buster!</div>
+
+      <div class="nav-buttons">
+        <a href="del1-07-nya-sverige.html" class="nav-btn secondary">&larr; Nya Sverige</a>
+        <a href="del1-quiz.html" class="nav-btn primary locked" id="nextBtn">Nästa: Quiz Del 1 &rarr;</a>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="tip-card">
+        <h4>Tips till Buster</h4>
+        <p>Propaganda finns fortfarande idag &ndash; kan du komma på ett modernt exempel? Tänk sociala medier!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="pause-btn" onclick="showPause()">Jag behöver en paus</button>
+<div class="pause-overlay" id="pauseOverlay">
+  <div class="pause-modal">
+    <h2 id="pauseTitle">Pausdags!</h2>
+    <p id="pauseMsg">Gör 10 armhävningar!</p>
+    <button onclick="closePause()">Jag är redo igen!</button>
+  </div>
+</div>
+
+<script>
+const PREFIX = 'buster-so-stormaktstiden-';
+const PAGE_ID = 'del1-08';
+let answered = false;
+let hintsUsed = 0;
+let startTime = Date.now();
+
+function getPoints(){ return parseInt(localStorage.getItem(PREFIX+'points')||'0') }
+function addPoints(n){ const p=getPoints()+n; localStorage.setItem(PREFIX+'points',p.toString()); updatePointsDisplay(); return p; }
+function updatePointsDisplay(){ document.getElementById('pointsDisplay').textContent=getPoints()+' p'; }
+function getProgress(){ return JSON.parse(localStorage.getItem(PREFIX+'progress')||'{}') }
+function markComplete(){ const p=getProgress(); p[PAGE_ID]=true; localStorage.setItem(PREFIX+'progress',JSON.stringify(p)); updateNav(); }
+function saveStats(pts){
+  const stats = JSON.parse(localStorage.getItem(PREFIX+'pageStats')||'{}');
+  stats[PAGE_ID] = {time:Math.round((Date.now()-startTime)/1000),hints:hintsUsed,points:pts,answer:document.getElementById('openAnswer').value,timestamp:new Date().toISOString()};
+  localStorage.setItem(PREFIX+'pageStats', JSON.stringify(stats));
+}
+
+function updateWC(){
+  const text = document.getElementById('openAnswer').value.trim();
+  const words = text ? text.split(/\s+/).length : 0;
+  document.getElementById('wordCount').textContent = words + ' ord (minst 15)';
+  document.getElementById('submitBtn').disabled = words < 15;
+}
+
+function submitOpen(){
+  if(answered) return;
+  answered = true;
+  document.getElementById('studentAnswer').textContent = document.getElementById('openAnswer').value;
+  document.getElementById('compareBox').classList.add('show');
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('openAnswer').disabled = true;
+}
+
+function selfAssess(good){
+  const pts = good ? 10 : 5;
+  addPoints(pts);
+  document.getElementById('selfAssess').innerHTML = '<span style="color:var(--success);font-weight:600">+' + pts + ' poäng!</span>';
+  document.querySelector('.celebration').textContent = 'Bra jobbat, Buster! +' + pts + ' poäng';
+  document.querySelector('.celebration').classList.add('show');
+  document.getElementById('nextBtn').classList.remove('locked');
+  markComplete();
+  saveStats(pts);
+}
+
+function showHint(n){
+  hintsUsed++;
+  document.getElementById('hint'+n).classList.add('show');
+  if(n===0 && document.getElementById('hintBtn1')) document.getElementById('hintBtn1').style.display='inline';
+}
+
+function updateNav(){
+  const progress = getProgress();
+  const pages = ['del1-01','del1-02','del1-03','del1-04','del1-05','del1-06','del1-07','del1-08','del1-quiz'];
+  let done = 0;
+  pages.forEach(p=>{
+    const el = document.getElementById('nav-'+p);
+    if(el && progress[p]){el.classList.add('done');el.querySelector('.icon').innerHTML='&#10003;';done++;}
+  });
+  document.getElementById('progressText').textContent = done+'/'+pages.length;
+  document.getElementById('progressBar').style.width = Math.round(done/pages.length*100)+'%';
+}
+
+function changeSize(d){ const el = document.getElementById('contentArea'); const c = parseFloat(getComputedStyle(el).fontSize); el.style.fontSize = (c + d*2) + 'px'; }
+
+const pauseMsgs = [
+  {t:'Rör på dig!',m:'Gör 10 armhävningar! Eller spring till köket och tillbaka.'},
+  {t:'Andas!',m:'Stäng ögonen. Andas in i 4 sekunder, håll i 4, andas ut i 4. Gör det 3 gånger.'},
+  {t:'Kolla ut!',m:'Titta ut genom fönstret i 30 sekunder. Kan du se något som rör sig?'},
+  {t:'Sträcka!',m:'Ställ dig upp, sträck armarna över huvudet och böj dig ner mot tårna.'},
+  {t:'Hjärnvila!',m:'Tänk på din favorit-MTB-led. Visualisera hela banan från start till mål.'}
+];
+function showPause(){ const msg = pauseMsgs[Math.floor(Math.random()*pauseMsgs.length)]; document.getElementById('pauseTitle').textContent = msg.t; document.getElementById('pauseMsg').textContent = msg.m; document.getElementById('pauseOverlay').classList.add('show'); }
+function closePause(){ document.getElementById('pauseOverlay').classList.remove('show') }
+
+function checkPrevious(){
+  const progress = getProgress();
+  if(progress[PAGE_ID]){
+    answered = true;
+    document.getElementById('openAnswer').disabled = true;
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('nextBtn').classList.remove('locked');
+    document.querySelector('.celebration').textContent = 'Du har redan klarat denna sida!';
+    document.querySelector('.celebration').classList.add('show');
+  }
+}
+
+updatePointsDisplay(); updateNav(); checkPrevious();
+</script>
+</body>
+</html>

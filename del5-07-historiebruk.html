@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historiebruk - Testa dig själv - Stormaktstiden</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f1f5f9;--card:#fff;--text:#1e293b;--muted:#64748b;
+  --accent:#2563eb;--success:#16a34a;--danger:#dc2626;--warning:#f59e0b;
+  --sidebar-bg:#1e293b;--sidebar-text:#e2e8f0;
+  --concept:#2563eb;--fact:#16a34a;--person:#dc2626;--funfact:#f59e0b;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:18px;line-height:1.7;color:var(--text);background:var(--bg);display:flex;min-height:100vh}
+
+.sidebar{width:220px;background:var(--sidebar-bg);color:var(--sidebar-text);padding:20px 0;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;overflow-y:auto}
+.sidebar .logo{padding:0 16px 16px;font-weight:800;font-size:1.1em;border-bottom:1px solid #334155}
+.sidebar .logo a{color:var(--sidebar-text);text-decoration:none}
+.sidebar nav{padding:12px 0;flex:1}
+.sidebar .section-title{padding:8px 16px;font-size:.7em;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin-top:8px}
+.sidebar a{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#cbd5e1;text-decoration:none;font-size:.85em;transition:background .15s}
+.sidebar a:hover{background:#334155}
+.sidebar a.active{background:var(--accent);color:#fff;font-weight:600}
+.sidebar a .icon{width:18px;text-align:center;font-size:.85em}
+.sidebar a.done .icon{color:var(--success)}
+.sidebar .progress-box{padding:12px 16px;border-top:1px solid #334155;margin-top:auto}
+.sidebar .progress-box .bar{height:6px;background:#334155;border-radius:3px;overflow:hidden;margin-top:6px}
+.sidebar .progress-box .bar-fill{height:100%;background:var(--success);border-radius:3px;transition:width .3s}
+.sidebar .progress-box span{font-size:.7em;color:#94a3b8}
+
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 28px;background:var(--card);border-bottom:1px solid #e2e8f0}
+.topbar .breadcrumb{font-size:.8em;color:var(--muted)}
+.topbar .breadcrumb a{color:var(--accent);text-decoration:none}
+.topbar .points{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--warning);font-size:.95em}
+.topbar .text-controls button{background:none;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.8em;margin-left:4px}
+
+.content-area{flex:1;display:flex;max-width:100%}
+.content{flex:1;padding:28px 32px;max-width:720px}
+.content h1{font-size:1.5em;font-weight:800;margin-bottom:4px;color:var(--sidebar-bg)}
+.content .subtitle{font-size:.85em;color:var(--muted);margin-bottom:20px}
+
+.info-box{background:#eff6ff;border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:16px 0;font-size:.9em}
+.fun-fact{background:#fefce8;border-left:4px solid var(--warning);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:16px 0;font-size:.9em}
+
+.example-card{background:var(--card);border:2px solid #e2e8f0;border-radius:var(--radius);padding:18px;margin:14px 0;box-shadow:var(--shadow)}
+.example-card h3{font-size:.95em;margin-bottom:8px;color:var(--sidebar-bg)}
+.example-card .example-desc{font-size:.88em;margin-bottom:8px}
+.example-card .critical{font-size:.85em;background:#fef2f2;padding:10px 12px;border-radius:6px;border-left:3px solid var(--danger);margin-top:8px;color:#7f1d1d}
+
+.question-block{background:var(--card);border:2px solid #e2e8f0;border-radius:var(--radius);padding:20px;margin:18px 0;box-shadow:var(--shadow)}
+.question-block h3{font-size:1em;margin-bottom:10px;color:var(--sidebar-bg)}
+.question-block .q-label{font-size:.75em;text-transform:uppercase;letter-spacing:1px;color:var(--accent);font-weight:700;margin-bottom:6px}
+
+.faktaruta{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius);margin-bottom:14px;overflow:hidden}
+.faktaruta-header{background:#dcfce7;padding:10px 14px;cursor:pointer;font-weight:700;font-size:.85em;color:#166534;display:flex;justify-content:space-between;align-items:center}
+.faktaruta-header:hover{background:#bbf7d0}
+.faktaruta-body{padding:10px 14px;font-size:.85em;line-height:1.6;display:none}
+.faktaruta-body.open{display:block}
+
+.mc-options{list-style:none;padding:0;margin:10px 0}
+.mc-options li{margin:6px 0}
+.mc-options button{width:100%;text-align:left;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;background:var(--card);cursor:pointer;font-family:inherit;font-size:.9em;transition:all .15s}
+.mc-options button:hover:not(:disabled){border-color:var(--accent);background:#eff6ff}
+.mc-options button.selected{border-color:var(--accent);background:#dbeafe}
+.mc-options button.correct{border-color:var(--success);background:#dcfce7}
+.mc-options button.wrong{border-color:var(--danger);background:#fee2e2}
+.mc-options button:disabled{cursor:default}
+
+textarea.answer-box{width:100%;min-height:120px;border:2px solid #e2e8f0;border-radius:8px;padding:12px;font-family:inherit;font-size:.95em;resize:vertical;line-height:1.6}
+textarea.answer-box:focus{outline:none;border-color:var(--accent)}
+
+.word-count{font-size:.75em;color:var(--muted);margin-top:4px;text-align:right}
+.word-count.ok{color:var(--success)}
+.word-count.short{color:var(--danger)}
+
+.hint-btn{background:none;border:1px dashed var(--accent);color:var(--accent);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.8em;font-family:inherit;margin-top:8px;margin-right:6px}
+.hint-btn:hover{background:#eff6ff}
+.hint-box{margin-top:8px;padding:10px 14px;background:#eff6ff;border-radius:8px;font-size:.85em;display:none}
+.hint-box.show{display:block}
+
+.show-facit-btn{margin-top:10px;padding:8px 18px;background:#f1f5f9;border:2px solid #e2e8f0;border-radius:8px;cursor:pointer;font-family:inherit;font-size:.85em;font-weight:600}
+.show-facit-btn:hover{background:#e2e8f0}
+.facit-box{margin-top:10px;padding:14px;background:#fefce8;border:1px solid #fde68a;border-radius:8px;font-size:.9em;line-height:1.6;display:none}
+.facit-box.show{display:block}
+
+.self-assess{margin-top:12px;padding:14px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;display:none}
+.self-assess.show{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.self-assess span{font-size:.9em;font-weight:600}
+.assess-btn{padding:8px 20px;border-radius:8px;border:2px solid #e2e8f0;background:var(--card);cursor:pointer;font-family:inherit;font-size:.85em;font-weight:600;transition:all .15s}
+.assess-btn:hover{border-color:var(--accent);background:#dbeafe}
+.assess-btn.selected-yes{border-color:var(--success);background:#dcfce7;color:#166534}
+.assess-btn.selected-no{border-color:var(--danger);background:#fee2e2;color:#991b1b}
+.assess-btn:disabled{opacity:.5;cursor:default}
+
+.check-btn{margin-top:12px;padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:.9em;cursor:pointer;font-family:inherit;font-weight:600}
+.check-btn:disabled{opacity:.4;cursor:not-allowed}
+.check-btn:hover:not(:disabled){background:#1d4ed8}
+
+.feedback{margin-top:12px;padding:12px 16px;border-radius:8px;font-size:.9em;display:none}
+.feedback.show{display:block}
+.feedback.correct{background:#dcfce7;color:#166534}
+.feedback.wrong{background:#fee2e2;color:#991b1b}
+.feedback.info{background:#dbeafe;color:#1e40af}
+
+.celebration{display:none;text-align:center;padding:12px;margin-top:12px;background:linear-gradient(135deg,#dcfce7,#dbeafe);border-radius:var(--radius);font-weight:600}
+.celebration.show{display:block}
+
+.nav-buttons{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0}
+.nav-btn{padding:10px 24px;border-radius:8px;font-size:.9em;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;border:none;display:inline-flex;align-items:center;gap:6px}
+.nav-btn.secondary{background:#f1f5f9;color:var(--text)}
+.nav-btn.secondary:hover{background:#e2e8f0}
+.nav-btn.primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25)}
+.nav-btn.primary:hover{background:#1d4ed8}
+
+.right-panel{width:200px;padding:20px 14px;flex-shrink:0}
+.tip-card{background:#fffacd;border-radius:5px;padding:18px 15px;box-shadow:3px 3px 10px rgba(0,0,0,0.1),0 0 0 1px rgba(0,0,0,0.05);transform:rotate(-2deg);position:relative;margin-bottom:20px;margin-top:12px}
+.tip-card::before{content:"";position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:40px;height:15px;background:rgba(200,180,140,0.6);border-radius:2px}
+.tip-card h4{font-size:13px;font-weight:600;color:#7a6a4a;margin-bottom:10px}
+.tip-card p{font-size:12px;line-height:1.5;color:#6a5a3a}
+
+.pause-btn{position:fixed;bottom:30px;right:30px;background:#c8f0d0;border:none;padding:15px 25px;border-radius:30px;font-family:inherit;font-size:15px;color:var(--text);cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,0.1);transition:all 0.2s ease;z-index:50}
+.pause-btn:hover{transform:scale(1.05);background:#88c498}
+.pause-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
+.pause-overlay.show{display:flex}
+.pause-modal{background:var(--card);border-radius:16px;padding:36px;text-align:center;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.pause-modal h2{font-size:1.3em;margin-bottom:12px}
+.pause-modal p{font-size:.95em;color:var(--muted);margin-bottom:20px}
+.pause-modal button{padding:12px 28px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:1em;cursor:pointer;font-family:inherit;font-weight:600}
+
+@media(max-width:960px){.sidebar{width:180px}.main{margin-left:180px}.right-panel{width:170px}}
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}.right-panel{display:none}.content{padding:20px}}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo"><a href="index.html">Stormaktstiden</a></div>
+  <nav>
+    <div class="section-title">Del 5: Testa dig själv</div>
+    <a href="del5-01-kronologi.html" id="nav-del5-01"><span class="icon">&#9675;</span> Kronologi</a>
+    <a href="del5-02-nyckelbegrepp.html" id="nav-del5-02"><span class="icon">&#9675;</span> Nyckelbegrepp</a>
+    <a href="del5-03-faktafragor.html" id="nav-del5-03"><span class="icon">&#9675;</span> Faktafrågor</a>
+    <a href="del5-04-forklaringsfragor.html" id="nav-del5-04"><span class="icon">&#9675;</span> Förklaringsfrågor</a>
+    <a href="del5-05-resonemangsfragor.html" id="nav-del5-05"><span class="icon">&#9675;</span> Resonemangsfrågor</a>
+    <a href="del5-06-kallkritik.html" id="nav-del5-06"><span class="icon">&#9675;</span> Källkritik</a>
+    <a href="del5-07-historiebruk.html" class="active" id="nav-del5-07"><span class="icon">&#9654;</span> Historiebruk</a>
+    <a href="del5-08-samband.html" id="nav-del5-08"><span class="icon">&#9675;</span> Samband</a>
+    <a href="del5-quiz.html" id="nav-del5-quiz"><span class="icon">&#9675;</span> Resultat</a>
+  </nav>
+  <div class="progress-box">
+    <span>Del 5: <span id="progressText">0/9</span></span>
+    <div class="bar"><div class="bar-fill" id="progressBar" style="width:0%"></div></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="breadcrumb"><a href="index.html">Stormaktstiden</a> &rsaquo; Del 5 &rsaquo; Historiebruk</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="text-controls"><button onclick="changeSize(-1)">A-</button><button onclick="changeSize(1)">A+</button></div>
+      <div class="points" id="pointsDisplay">0 p</div>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div class="content" id="contentArea">
+      <div class="subtitle">Del 5 &middot; Sida 7 av 8</div>
+      <h1>Hur historia används</h1>
+
+      <p>Historia handlar inte bara om det som hände &ndash; det handlar också om <strong>hur vi använder det som hände</strong>. Stormaktstiden har använts på många olika sätt genom århundradena. Låt oss titta på några exempel!</p>
+
+      <div class="info-box">
+        <strong>Vad är historiebruk?</strong> Historiebruk betyder att man använder historia för ett syfte &ndash; till exempel för att skapa stolthet, motivera politik, sälja produkter eller underhålla. Det viktiga är att fråga: <em>Varför</em> används historien så här? Och <em>vems</em> bild av historien visas?
+      </div>
+
+      <!-- Exempel 1 -->
+      <div class="example-card">
+        <h3>Karl XII i populärkultur</h3>
+        <div class="example-desc">Karl XII har blivit en symbol för svensk militär tapperhet och uthållighet. Han förekommer i sånger, statyer och berättelser som en hjältekonung som aldrig gav upp.</div>
+        <div class="critical"><strong>Tänk kritiskt:</strong> Hjältebilden bortser från att Karl XII:s krig kostade hundratusentals människoliv och ledde till rikets ruin. Bilden ser helt olika ut beroende på om man frågar en svensk nationalist, en rysk historiker eller en estnisk bonde.</div>
+      </div>
+
+      <!-- Exempel 2 -->
+      <div class="example-card">
+        <h3>Karl XII-statyn i Kungsträdgården, Stockholm</h3>
+        <div class="example-desc">Statyn, avtäckt 1868, visar Karl XII pekande österut &ndash; mot Ryssland. Den har vid flera tillfällen blivit samlingsplats för nationalistiska grupper, men har också ifrågasatts som symbol för krig och storhetsmyter.</div>
+        <div class="critical"><strong>Tänk kritiskt:</strong> Att statyn restes under nationalromantiken visar hur 1800-talets behov av nationella hjältar formade minnet av 1700-talets krig. Historiska monument bär alltid sin samtids värderingar.</div>
+      </div>
+
+      <!-- Exempel 3 -->
+      <div class="example-card">
+        <h3>Stormaktstiden i datorspel</h3>
+        <div class="example-desc">Den svenska stormaktstiden är populär i datorspel som Europa Universalis och Civilization. Spelaren styr Sverige som en framgångsrik militärmakt och kan &quot;återskapa&quot; det svenska Östersjöväldet.</div>
+        <div class="critical"><strong>Tänk kritiskt:</strong> Spelen förenklar historien till militär strategi och makt. De mänskliga kostnaderna &ndash; döda soldater, hungrande familjer, erövrade folks lidande &ndash; syns sällan. Spelaren får uppleva stormakten ur makthavarens perspektiv, aldrig ur bondens.</div>
+      </div>
+
+      <!-- Exempel 4 -->
+      <div class="example-card">
+        <h3>Estniskt och lettiskt perspektiv: &quot;den goda svenska tiden&quot;</h3>
+        <div class="example-desc">I Estland och Lettland kallas den svenska perioden ibland &quot;den goda svenska tiden&quot; i kontrast till senare rysk och tysk övermakt. Men denna positiva bild är delvis en romantisering &ndash; livegenskapen bestod även under svenskt styre.</div>
+        <div class="critical"><strong>Tänk kritiskt:</strong> Att den svenska perioden framstår som positiv beror delvis på att alternativen var <em>värre</em> &ndash; inte på att det svenska styret i sig var gott. Historiebruk sker alltid i jämförelse med något annat.</div>
+      </div>
+
+      <h2 style="font-size:1.2em;margin-top:28px;margin-bottom:12px">Frågor om historiebruk</h2>
+
+      <!-- Öppen fråga (A-nivå) -->
+      <div class="question-block" id="q1-block">
+        <div class="q-label">Fråga 1 &ndash; Öppen (A-nivå)</div>
+        <div class="faktaruta">
+          <div class="faktaruta-header" onclick="toggleFakta('fakta1')">Kom ihåg: Perspektiv avgör tolkningen <span id="fakta1-arrow">&#9660;</span></div>
+          <div class="faktaruta-body" id="fakta1">Samma historiska period kan beskrivas helt olika beroende på vem som berättar. Svenska läroböcker har ofta betonat stormaktstiden som en storhetstid, medan estniska och lettiska källor beskriver den som ockupation. Ingen bild är &quot;fel&quot; &ndash; men ingen är heller komplett ensam.</div>
+        </div>
+        <h3>Varför kan samma tidsperiod kallas &quot;storhetstid&quot; av svenskar och &quot;ockupationstid&quot; av ester?</h3>
+        <textarea class="answer-box" id="q1-answer" placeholder="Skriv ditt resonemang här (minst 15 ord)..." oninput="countWords('q1')"></textarea>
+        <div class="word-count" id="q1-wc">0 ord</div>
+        <button class="hint-btn" onclick="showHint('q1-hint1')">Ledtråd 1</button>
+        <button class="hint-btn" onclick="showHint('q1-hint2')">Ledtråd 2</button>
+        <button class="hint-btn" onclick="showHint('q1-hint3')">Ledtråd 3</button>
+        <div class="hint-box" id="q1-hint1">Vad innebar stormaktstiden för Sverige? Och vad innebar den för Estland?</div>
+        <div class="hint-box" id="q1-hint2">Tänk: för svenskar = erövring och makt. För ester = att bli erövrade och styrda av en främmande makt.</div>
+        <div class="hint-box" id="q1-hint3">Kan båda beskrivningarna vara sanna samtidigt? Tänk på att verkligheten kan upplevas helt olika av olika folk.</div>
+        <button class="show-facit-btn" id="q1-facit-btn" onclick="showFacit('q1')">Visa facit</button>
+        <div class="facit-box" id="q1-facit"><strong>Exempelsvar:</strong> Samma period kan kallas storhetstid av svenskar för att Sverige blev mäktigt, vann krig och kontrollerade stora områden. Men för esterna var det en ockupationstid &ndash; de styrdes av en främmande makt, levde under livegenskap och hade inga rättigheter. Det beror helt på perspektivet: för den som erövrar är det en framgång, för den som erövras är det förtryck. Båda beskrivningarna kan vara sanna samtidigt, eftersom de beskriver samma verklighet ur helt olika synvinklar.</div>
+        <div class="self-assess" id="q1-assess">
+          <span>Fick du med det viktiga?</span>
+          <button class="assess-btn" onclick="selfAssess('q1','ja')">Ja</button>
+          <button class="assess-btn" onclick="selfAssess('q1','nej')">Nej</button>
+        </div>
+        <div class="feedback" id="q1-feedback"></div>
+      </div>
+
+      <!-- Flervalsfråga -->
+      <div class="question-block" id="q2-block">
+        <div class="q-label">Fråga 2 &ndash; Flerval</div>
+        <div class="faktaruta">
+          <div class="faktaruta-header" onclick="toggleFakta('fakta2')">Kom ihåg: Datorspel och historia <span id="fakta2-arrow">&#9660;</span></div>
+          <div class="faktaruta-body" id="fakta2">I spel som Europa Universalis och Civilization styr spelaren ett land och fattar militära och politiska beslut. Spelen visar stormakten ur makthavarens perspektiv &ndash; man ser kartan, arméerna och ekonomin. Men man ser inte soldaterna som dör, bönderna som svälter eller de erövrade folkens lidande.</div>
+        </div>
+        <h3>Vad missar man om stormaktstiden i ett datorspel?</h3>
+        <ul class="mc-options" id="q2-options">
+          <li><button onclick="selectMC('q2',0)">A. Vilka slag som utkämpades</button></li>
+          <li><button onclick="selectMC('q2',1)">B. Vilka länder Sverige erövrade</button></li>
+          <li><button onclick="selectMC('q2',2)">C. De mänskliga kostnaderna &ndash; döda soldater, hungrande familjer och erövrade folks lidande</button></li>
+          <li><button onclick="selectMC('q2',3)">D. Vilka kungar som regerade</button></li>
+        </ul>
+        <button class="check-btn" id="q2-check" onclick="checkMC('q2',2)" disabled>Kontrollera</button>
+        <div class="feedback" id="q2-feedback"></div>
+      </div>
+
+      <div class="celebration" id="celebration"></div>
+
+      <div class="nav-buttons">
+        <a href="del5-06-kallkritik.html" class="nav-btn secondary">&larr; Källkritik</a>
+        <a href="del5-08-samband.html" class="nav-btn primary" id="nextBtn">Nästa: Samband &rarr;</a>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="tip-card">
+        <h4>Tips till Buster</h4>
+        <p>Historiebruk finns överallt &ndash; i filmer, spel, reklam och politik. Nästa gång du spelar ett strategispel, tänk: vems perspektiv spelar jag från?</p>
+      </div>
+      <div class="tip-card">
+        <h4>Geografi-koppling</h4>
+        <p>Titta på en karta: Estland, Lettland, Finland &ndash; alla styrdes av Sverige. Men hur upplevde de det? Geografi visar VAR, historiebruk visar HUR VI BERÄTTAR.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="pause-btn" onclick="showPause()">Jag behöver en paus</button>
+<div class="pause-overlay" id="pauseOverlay">
+  <div class="pause-modal">
+    <h2 id="pauseTitle">Pausdags!</h2>
+    <p id="pauseMsg">Gör 10 armhävningar!</p>
+    <button onclick="closePause()">Jag är redo igen!</button>
+  </div>
+</div>
+
+<script>
+const PREFIX='buster-so-stormaktstiden-';
+const PAGE_ID='del5-07';
+let startTime=Date.now();
+let completed={q1:false,q2:false};
+let totalPts=0;
+
+function toggleFakta(id){
+  const el=document.getElementById(id);
+  el.classList.toggle('open');
+  const arrow=document.getElementById(id+'-arrow');
+  arrow.innerHTML=el.classList.contains('open')?'&#9650;':'&#9660;';
+}
+
+function countWords(qid){
+  const text=document.getElementById(qid+'-answer').value.trim();
+  const words=text?text.split(/\s+/).length:0;
+  const el=document.getElementById(qid+'-wc');
+  el.textContent=words+' ord';
+  el.className='word-count'+(words>=15?' ok':' short');
+}
+
+function showHint(id){document.getElementById(id).classList.add('show');}
+
+let mcSelections={};
+function selectMC(qid,idx){
+  if(completed[qid]) return;
+  mcSelections[qid]=idx;
+  const btns=document.querySelectorAll('#'+qid+'-options button');
+  btns.forEach((b,i)=>{b.className=i===idx?'selected':'';});
+  document.getElementById(qid+'-check').disabled=false;
+}
+
+function checkMC(qid,correctIdx){
+  if(completed[qid]) return;
+  completed[qid]=true;
+  const chosen=mcSelections[qid];
+  const btns=document.querySelectorAll('#'+qid+'-options button');
+  btns.forEach((b,i)=>{
+    b.disabled=true;
+    if(i===correctIdx) b.className='correct';
+    else if(i===chosen && i!==correctIdx) b.className='wrong';
+  });
+  document.getElementById(qid+'-check').disabled=true;
+  const fb=document.getElementById(qid+'-feedback');
+  if(chosen===correctIdx){
+    fb.className='feedback correct show';
+    fb.textContent='Rätt! Spelen visar makt och strategi, men inte det mänskliga priset. +10 poäng';
+    addPoints(10);
+    totalPts+=10;
+  } else {
+    fb.className='feedback wrong show';
+    fb.textContent='Inte riktigt. Spelen visar slag och erövring, men missar de mänskliga kostnaderna. +5 poäng.';
+    addPoints(5);
+    totalPts+=5;
+  }
+  checkAllDone();
+  saveStats();
+}
+
+function showFacit(qid){
+  document.getElementById(qid+'-facit').classList.add('show');
+  document.getElementById(qid+'-facit-btn').style.display='none';
+  document.getElementById(qid+'-assess').classList.add('show');
+  const answer=document.getElementById(qid+'-answer').value.trim();
+  const answers=JSON.parse(localStorage.getItem(PREFIX+'del5-07-answers')||'{}');
+  answers[qid]=answer;
+  localStorage.setItem(PREFIX+'del5-07-answers',JSON.stringify(answers));
+}
+
+function selfAssess(qid,val){
+  if(completed[qid]) return;
+  completed[qid]=true;
+  const btns=document.getElementById(qid+'-assess').querySelectorAll('.assess-btn');
+  btns.forEach(b=>{
+    b.disabled=true;
+    if(b.textContent.toLowerCase()===val) b.classList.add(val==='ja'?'selected-yes':'selected-no');
+  });
+  const fb=document.getElementById(qid+'-feedback');
+  if(val==='ja'){
+    fb.className='feedback correct show';
+    fb.textContent='Starkt tänkt, Buster! Du ser historien ur flera perspektiv. +10 poäng';
+  } else {
+    fb.className='feedback info show';
+    fb.textContent='Bra försök! Läs exempelsvaret och tänk på perspektiven. +10 poäng.';
+  }
+  addPoints(10);
+  totalPts+=10;
+  const assessData=JSON.parse(localStorage.getItem(PREFIX+'del5-07-assess')||'{}');
+  assessData[qid]=val;
+  localStorage.setItem(PREFIX+'del5-07-assess',JSON.stringify(assessData));
+  checkAllDone();
+  saveStats();
+}
+
+function checkAllDone(){
+  if(completed.q1&&completed.q2){
+    markComplete();
+    document.getElementById('celebration').textContent='Historiebruk avklarat! Du förstår att historia alltid berättas ur ett perspektiv.';
+    document.getElementById('celebration').classList.add('show');
+  }
+}
+
+function getPoints(){return parseInt(localStorage.getItem(PREFIX+'points')||'0')}
+function addPoints(n){const p=getPoints()+n;localStorage.setItem(PREFIX+'points',p.toString());updatePointsDisplay();return p;}
+function updatePointsDisplay(){document.getElementById('pointsDisplay').textContent=getPoints()+' p';}
+
+function getProgress(){return JSON.parse(localStorage.getItem(PREFIX+'progress')||'{}')}
+function markComplete(){
+  const p=getProgress();p[PAGE_ID]=true;
+  localStorage.setItem(PREFIX+'progress',JSON.stringify(p));
+  updateNav();
+}
+function saveStats(){
+  const stats=JSON.parse(localStorage.getItem(PREFIX+'pageStats')||'{}');
+  const done=Object.values(completed).filter(Boolean).length;
+  stats[PAGE_ID]={time:Math.round((Date.now()-startTime)/1000),completed:done,total:2,points:totalPts,timestamp:new Date().toISOString()};
+  localStorage.setItem(PREFIX+'pageStats',JSON.stringify(stats));
+}
+
+function updateNav(){
+  const progress=getProgress();
+  const pages=['del5-01','del5-02','del5-03','del5-04','del5-05','del5-06','del5-07','del5-08','del5-quiz'];
+  let done=0;
+  pages.forEach(p=>{
+    const el=document.getElementById('nav-'+p);
+    if(el&&progress[p]){el.classList.add('done');el.querySelector('.icon').innerHTML='&#10003;';done++;}
+  });
+  document.getElementById('progressText').textContent=done+'/'+pages.length;
+  document.getElementById('progressBar').style.width=Math.round(done/pages.length*100)+'%';
+}
+
+function changeSize(d){
+  const el=document.getElementById('contentArea');
+  const current=parseFloat(getComputedStyle(el).fontSize);
+  el.style.fontSize=(current+d*2)+'px';
+}
+
+const pauseMsgs=[
+  {t:'Rör på dig!',m:'Gör 10 armhävningar! Eller spring till köket och tillbaka.'},
+  {t:'Andas!',m:'Stäng ögonen. Andas in i 4 sekunder, håll i 4, andas ut i 4. Gör det 3 gånger.'},
+  {t:'Kolla ut!',m:'Titta ut genom fönstret i 30 sekunder. Kan du se något som rör sig?'},
+  {t:'Sträcka!',m:'Ställ dig upp, sträck armarna över huvudet och böj dig ner mot tårna.'},
+  {t:'Hjärnvila!',m:'Tänk på din favorit-MTB-led. Visualisera hela banan från start till mål.'}
+];
+function showPause(){
+  const msg=pauseMsgs[Math.floor(Math.random()*pauseMsgs.length)];
+  document.getElementById('pauseTitle').textContent=msg.t;
+  document.getElementById('pauseMsg').textContent=msg.m;
+  document.getElementById('pauseOverlay').classList.add('show');
+}
+function closePause(){document.getElementById('pauseOverlay').classList.remove('show')}
+
+function loadPrevious(){
+  const progress=getProgress();
+  if(progress[PAGE_ID]){
+    document.getElementById('celebration').textContent='Du har redan klarat denna sida!';
+    document.getElementById('celebration').classList.add('show');
+  }
+}
+
+updatePointsDisplay();updateNav();loadPrevious();
+</script>
+</body>
+</html>

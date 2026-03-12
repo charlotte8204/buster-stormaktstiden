@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statistik: Stormaktstiden – Buster</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f1f5f9;--card:#fff;--text:#1e293b;--muted:#64748b;
+  --accent:#2563eb;--success:#16a34a;--danger:#dc2626;--warning:#f59e0b;
+  --sidebar:#1e293b;--sidebar-text:#e2e8f0;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:18px;line-height:1.6;color:var(--text);background:var(--bg);min-height:100vh}
+.container{max-width:960px;margin:0 auto;padding:24px}
+header{text-align:center;padding:32px 0 24px}
+header h1{font-size:2.2em;font-weight:800;color:var(--sidebar);letter-spacing:-1px}
+header p{font-size:1.05em;color:var(--muted);margin-top:8px}
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:20px 0}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:20px 18px;box-shadow:var(--shadow);text-align:center}
+.stat-card .stat-value{font-size:2em;font-weight:800;line-height:1.2}
+.stat-card .stat-label{font-size:.82em;color:var(--muted);margin-top:4px;font-weight:600}
+.stat-card.gold .stat-value{color:var(--warning)}
+.stat-card.blue .stat-value{color:var(--accent)}
+.stat-card.green .stat-value{color:var(--success)}
+.stat-card.red .stat-value{color:var(--danger)}
+.stat-card.purple .stat-value{color:#7c3aed}
+
+.section-panel{background:var(--card);border-radius:var(--radius);margin:14px 0;box-shadow:var(--shadow);overflow:hidden}
+.section-header{display:flex;align-items:center;gap:14px;padding:16px 22px;cursor:pointer;user-select:none;transition:background .15s}
+.section-header:hover{background:#f8fafc}
+.section-header .num{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1em;color:#fff;flex-shrink:0}
+.num.blue{background:var(--accent)}
+.num.green{background:var(--success)}
+.num.orange{background:var(--warning)}
+.num.red{background:var(--danger)}
+.num.purple{background:#7c3aed}
+.section-header .title{flex:1;font-weight:700;font-size:1em}
+.section-header .summary{font-size:.82em;color:var(--muted);font-weight:600;margin-right:8px}
+.section-header .arrow{font-size:1.2em;color:var(--muted);transition:transform .2s}
+.section-header.open .arrow{transform:rotate(90deg)}
+.section-body{display:none;padding:0 22px 18px;animation:fadeIn .2s ease}
+.section-header.open + .section-body{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+.mini-table{width:100%;border-collapse:collapse;font-size:.85em;margin-top:10px}
+.mini-table th{text-align:left;padding:8px 10px;background:#f8fafc;border-bottom:2px solid #e2e8f0;font-weight:700;color:var(--sidebar);font-size:.9em}
+.mini-table td{padding:8px 10px;border-bottom:1px solid #f1f5f9}
+.mini-table tr:last-child td{border-bottom:none}
+.mini-table .status-badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:.85em;font-weight:600}
+.status-klar{background:#dcfce7;color:var(--success)}
+.status-paborjad{background:#dbeafe;color:var(--accent)}
+.status-ej{background:#f1f5f9;color:var(--muted)}
+
+.full-table-wrapper{background:var(--card);border-radius:var(--radius);padding:22px;margin:20px 0;box-shadow:var(--shadow);overflow-x:auto}
+.full-table-wrapper h2{font-size:1.15em;margin-bottom:14px;color:var(--sidebar)}
+.full-table{width:100%;border-collapse:collapse;font-size:.85em}
+.full-table th{text-align:left;padding:10px 10px;background:#f8fafc;border-bottom:2px solid #e2e8f0;font-weight:700;color:var(--sidebar);font-size:.9em;white-space:nowrap}
+.full-table td{padding:9px 10px;border-bottom:1px solid #f1f5f9}
+.full-table tr:last-child td{border-bottom:none}
+.full-table tr:hover td{background:#f8fafc}
+
+.info-card{background:var(--card);border-radius:var(--radius);padding:22px;margin:20px 0;box-shadow:var(--shadow)}
+.info-card h2{font-size:1.15em;margin-bottom:14px;color:var(--sidebar)}
+.info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:.92em}
+.info-row:last-child{border-bottom:none}
+.info-row .label{color:var(--muted);font-weight:600}
+.info-row .value{font-weight:700}
+
+.btn-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:28px 0 12px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border:none;border-radius:var(--radius);font-size:.95em;font-weight:700;cursor:pointer;text-decoration:none;transition:background .2s,transform .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.btn-primary:hover{background:#1d4ed8}
+.btn-success{background:var(--success);color:#fff;box-shadow:0 4px 12px rgba(22,163,74,.3)}
+.btn-success:hover{background:#15803d}
+.btn-danger{background:#fee2e2;color:var(--danger)}
+.btn-danger:hover{background:#fecaca}
+.btn-back{background:var(--card);color:var(--text);box-shadow:var(--shadow)}
+.btn-back:hover{background:#f8fafc}
+
+.footer{text-align:center;padding:20px 0;font-size:.85em;color:var(--muted)}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state .icon{font-size:2.5em;margin-bottom:12px}
+.empty-state p{font-size:1em}
+
+@media(max-width:600px){
+  .container{padding:16px}
+  header h1{font-size:1.6em}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat-card .stat-value{font-size:1.5em}
+  .btn-row{flex-direction:column;align-items:stretch}
+  .btn{justify-content:center}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Statistik: Stormaktstiden – Buster</h1>
+    <p>Här kan du och din lärare se hur det har gått.</p>
+  </header>
+
+  <div class="stats-grid" id="overviewStats">
+    <div class="stat-card gold">
+      <div class="stat-value" id="totalPoints">0</div>
+      <div class="stat-label">Total poäng</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-value" id="pagesComplete">0/49</div>
+      <div class="stat-label">Sidor klara</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-value" id="quizComplete">0/5</div>
+      <div class="stat-label">Quiz klara</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-value" id="totalTime">0 s</div>
+      <div class="stat-label">Total tid</div>
+    </div>
+  </div>
+
+  <div id="sectionPanels"></div>
+
+  <div class="full-table-wrapper">
+    <h2>Resultat per sida</h2>
+    <div id="fullTableContainer"></div>
+  </div>
+
+  <div class="info-card" id="timeCard">
+    <h2>Tid per sida</h2>
+    <div class="info-row"><span class="label">Kortaste tid</span><span class="value" id="minTime">–</span></div>
+    <div class="info-row"><span class="label">Genomsnittlig tid</span><span class="value" id="avgTime">–</span></div>
+    <div class="info-row"><span class="label">Längsta tid</span><span class="value" id="maxTime">–</span></div>
+  </div>
+
+  <div class="info-card" id="gradeCard">
+    <h2>Fördelning av frågetyper</h2>
+    <div id="gradeDistribution">
+      <p style="color:var(--muted);font-size:.9em;">Ingen data tillgänglig ännu.</p>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-success" onclick="exportCSV()">Exportera CSV</button>
+    <button class="btn btn-danger" onclick="clearHistory()">Rensa all historik</button>
+    <a href="index.html" class="btn btn-back">Tillbaka till översikten</a>
+  </div>
+
+  <div class="footer">Stormaktstiden – Buster</div>
+
+</div>
+
+<script>
+const PREFIX = 'buster-so-stormaktstiden-';
+
+const sections = [
+  { num: 1, title: 'Vägen till stormakt', color: 'blue', pages: ['del1-01','del1-02','del1-03','del1-04','del1-05','del1-06','del1-07','del1-08','del1-quiz'] },
+  { num: 2, title: 'Stormaktens höjdpunkt', color: 'green', pages: ['del2-01','del2-02','del2-03','del2-04','del2-05','del2-06','del2-07','del2-08','del2-09','del2-quiz'] },
+  { num: 3, title: 'Livet under stormaktstiden', color: 'orange', pages: ['del3-01','del3-02','del3-03','del3-04','del3-05','del3-06','del3-07','del3-08','del3-09','del3-10','del3-quiz'] },
+  { num: 4, title: 'Stormaktens fall', color: 'red', pages: ['del4-01','del4-02','del4-03','del4-04','del4-05','del4-06','del4-07','del4-08','del4-09','del4-quiz'] },
+  { num: 5, title: 'Testa dig själv', color: 'purple', pages: ['del5-01','del5-02','del5-03','del5-04','del5-05','del5-06','del5-07','del5-08','del5-quiz'] }
+];
+
+const allPages = sections.flatMap(s => s.pages);
+const quizPages = allPages.filter(p => p.endsWith('-quiz'));
+
+function getData() {
+  const stats = JSON.parse(localStorage.getItem(PREFIX + 'pageStats') || '{}');
+  const progress = JSON.parse(localStorage.getItem(PREFIX + 'progress') || '{}');
+  const points = parseInt(localStorage.getItem(PREFIX + 'points') || '0');
+  const gradeStats = JSON.parse(localStorage.getItem(PREFIX + 'gradeStats') || 'null');
+  return { stats, progress, points, gradeStats };
+}
+
+function formatTime(seconds) {
+  if (!seconds || seconds === 0) return '–';
+  if (seconds < 60) return seconds + ' s';
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m + ' min ' + (s > 0 ? s + ' s' : '');
+}
+
+function getStatus(pageId, progress, stats) {
+  if (progress[pageId] === true) return 'Klar';
+  if (stats[pageId] && stats[pageId].time) return 'Påbörjad';
+  return 'Ej startad';
+}
+
+function statusClass(status) {
+  if (status === 'Klar') return 'status-klar';
+  if (status === 'Påbörjad') return 'status-paborjad';
+  return 'status-ej';
+}
+
+function updateOverview(data) {
+  const { stats, progress, points } = data;
+  document.getElementById('totalPoints').textContent = points;
+  const pagesCompleteCount = allPages.filter(p => progress[p] === true).length;
+  document.getElementById('pagesComplete').textContent = pagesCompleteCount + '/' + allPages.length;
+  const quizCompleteCount = quizPages.filter(p => progress[p] === true).length;
+  document.getElementById('quizComplete').textContent = quizCompleteCount + '/' + quizPages.length;
+  let totalSec = 0;
+  allPages.forEach(p => {
+    if (stats[p] && stats[p].time) totalSec += stats[p].time;
+  });
+  document.getElementById('totalTime').textContent = formatTime(totalSec);
+}
+
+function buildSectionPanels(data) {
+  const { stats, progress } = data;
+  const container = document.getElementById('sectionPanels');
+  container.innerHTML = '';
+  sections.forEach(sec => {
+    const panel = document.createElement('div');
+    panel.className = 'section-panel';
+    const doneCount = sec.pages.filter(p => progress[p] === true).length;
+    const totalCount = sec.pages.length;
+    const header = document.createElement('div');
+    header.className = 'section-header';
+    header.innerHTML = '<div class="num ' + sec.color + '">' + sec.num + '</div><div class="title">Del ' + sec.num + ': ' + sec.title + '</div><div class="summary">' + doneCount + '/' + totalCount + ' klara</div><div class="arrow">&#9654;</div>';
+    header.addEventListener('click', function() { this.classList.toggle('open'); });
+    const body = document.createElement('div');
+    body.className = 'section-body';
+    let tableHTML = '<table class="mini-table"><thead><tr><th>Sida</th><th>Status</th><th>Poäng</th><th>Tid</th><th>Ledtrådar</th><th>Försök</th></tr></thead><tbody>';
+    sec.pages.forEach(p => {
+      const s = stats[p] || {};
+      const status = getStatus(p, progress, stats);
+      tableHTML += '<tr><td><strong>' + p + '</strong></td><td><span class="status-badge ' + statusClass(status) + '">' + status + '</span></td><td>' + (s.points || 0) + '</td><td>' + formatTime(s.time || 0) + '</td><td>' + (s.hints || 0) + '</td><td>' + (s.attempts || 0) + '</td></tr>';
+    });
+    tableHTML += '</tbody></table>';
+    body.innerHTML = tableHTML;
+    panel.appendChild(header);
+    panel.appendChild(body);
+    container.appendChild(panel);
+  });
+}
+
+function buildFullTable(data) {
+  const { stats, progress } = data;
+  const container = document.getElementById('fullTableContainer');
+  const hasAnyData = allPages.some(p => stats[p] || progress[p]);
+  if (!hasAnyData) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">&#128202;</div><p>Ingen data ännu. Börja med Del 1 för att se statistik här!</p></div>';
+    return;
+  }
+  let html = '<table class="full-table"><thead><tr><th>Sida</th><th>Status</th><th>Poäng</th><th>Tid</th><th>Ledtrådar</th><th>Försök</th><th>Datum</th></tr></thead><tbody>';
+  allPages.forEach(p => {
+    const s = stats[p] || {};
+    const status = getStatus(p, progress, stats);
+    const date = s.timestamp ? new Date(s.timestamp).toLocaleDateString('sv-SE') : '–';
+    html += '<tr><td><strong>' + p + '</strong></td><td><span class="status-badge ' + statusClass(status) + '">' + status + '</span></td><td>' + (s.points || 0) + '</td><td>' + formatTime(s.time || 0) + '</td><td>' + (s.hints || 0) + '</td><td>' + (s.attempts || 0) + '</td><td>' + date + '</td></tr>';
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+function buildTimeStats(data) {
+  const { stats } = data;
+  const times = allPages.map(p => (stats[p] && stats[p].time) ? stats[p].time : 0).filter(t => t > 0);
+  if (times.length === 0) {
+    document.getElementById('minTime').textContent = '–';
+    document.getElementById('avgTime').textContent = '–';
+    document.getElementById('maxTime').textContent = '–';
+    return;
+  }
+  document.getElementById('minTime').textContent = formatTime(Math.min(...times));
+  document.getElementById('avgTime').textContent = formatTime(Math.round(times.reduce((a, b) => a + b, 0) / times.length));
+  document.getElementById('maxTime').textContent = formatTime(Math.max(...times));
+}
+
+function buildGradeDistribution(data) {
+  const { gradeStats, stats } = data;
+  const container = document.getElementById('gradeDistribution');
+  if (gradeStats && (gradeStats.E || gradeStats.C || gradeStats.A)) {
+    const total = (gradeStats.E || 0) + (gradeStats.C || 0) + (gradeStats.A || 0);
+    container.innerHTML = '<div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:8px;"><div style="flex:1;min-width:100px;text-align:center;padding:14px;background:#dcfce7;border-radius:var(--radius);"><div style="font-size:1.8em;font-weight:800;color:var(--success);">' + (gradeStats.E || 0) + '</div><div style="font-size:.82em;font-weight:600;color:var(--muted);">E-nivå</div></div><div style="flex:1;min-width:100px;text-align:center;padding:14px;background:#dbeafe;border-radius:var(--radius);"><div style="font-size:1.8em;font-weight:800;color:var(--accent);">' + (gradeStats.C || 0) + '</div><div style="font-size:.82em;font-weight:600;color:var(--muted);">C-nivå</div></div><div style="flex:1;min-width:100px;text-align:center;padding:14px;background:#f5f3ff;border-radius:var(--radius);"><div style="font-size:1.8em;font-weight:800;color:#7c3aed;">' + (gradeStats.A || 0) + '</div><div style="font-size:.82em;font-weight:600;color:var(--muted);">A-nivå</div></div></div><div style="margin-top:10px;font-size:.82em;color:var(--muted);text-align:center;">Totalt ' + total + ' frågor besvarade</div>';
+    return;
+  }
+  let eCount = 0, cCount = 0, aCount = 0;
+  allPages.forEach(p => {
+    const s = stats[p] || {};
+    if (s.eCorrect !== undefined) eCount += s.eCorrect;
+    if (s.cCorrect !== undefined) cCount += s.cCorrect;
+    if (s.aCorrect !== undefined) aCount += s.aCorrect;
+  });
+  if (eCount + cCount + aCount > 0) {
+    const total = eCount + cCount + aCount;
+    container.innerHTML = '<div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:8px;"><div style="flex:1;min-width:100px;text-align:center;padding:14px;background:#dcfce7;border-radius:var(--radius);"><div style="font-size:1.8em;font-weight:800;color:var(--success);">' + eCount + '</div><div style="font-size:.82em;font-weight:600;color:var(--muted);">E-nivå</div></div><div style="flex:1;min-width:100px;text-align:center;padding:14px;background:#dbeafe;border-radius:var(--radius);"><div style="font-size:1.8em;font-weight:800;color:var(--accent);">' + cCount + '</div><div style="font-size:.82em;font-weight:600;color:var(--muted);">C-nivå</div></div><div style="flex:1;min-width:100px;text-align:center;padding:14px;background:#f5f3ff;border-radius:var(--radius);"><div style="font-size:1.8em;font-weight:800;color:#7c3aed;">' + aCount + '</div><div style="font-size:.82em;font-weight:600;color:var(--muted);">A-nivå</div></div></div><div style="margin-top:10px;font-size:.82em;color:var(--muted);text-align:center;">Totalt ' + total + ' rätt</div>';
+  } else {
+    container.innerHTML = '<p style="color:var(--muted);font-size:.9em;">Ingen data om frågetyper (E/C/A) tillgänglig ännu.</p>';
+  }
+}
+
+function exportCSV() {
+  const stats = JSON.parse(localStorage.getItem(PREFIX + 'pageStats') || '{}');
+  const progress = JSON.parse(localStorage.getItem(PREFIX + 'progress') || '{}');
+  let csv = 'Sida,Status,Poäng,Tid (s),Ledtrådar,Försök,Datum\n';
+  allPages.forEach(p => {
+    const s = stats[p] || {};
+    const status = progress[p] ? 'Klar' : (s.time ? 'Påbörjad' : 'Ej startad');
+    csv += p + ',' + status + ',' + (s.points||0) + ',' + (s.time||0) + ',' + (s.hints||0) + ',' + (s.attempts||0) + ',' + (s.timestamp||'') + '\n';
+  });
+  const blob = new Blob(['\ufeff' + csv], {type: 'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'buster-stormaktstiden-statistik.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function clearHistory() {
+  if(!confirm('Vill du verkligen rensa ALL historik? Alla svar och poäng försvinner.')) return;
+  Object.keys(localStorage).forEach(k => {
+    if(k.startsWith(PREFIX)) localStorage.removeItem(k);
+  });
+  location.reload();
+}
+
+function init() {
+  const data = getData();
+  updateOverview(data);
+  buildSectionPanels(data);
+  buildFullTable(data);
+  buildTimeStats(data);
+  buildGradeDistribution(data);
+}
+
+init();
+</script>
+</body>
+</html>

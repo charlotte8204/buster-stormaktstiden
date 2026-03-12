@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Samband och resonemang - Testa dig själv - Stormaktstiden</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f1f5f9;--card:#fff;--text:#1e293b;--muted:#64748b;
+  --accent:#2563eb;--success:#16a34a;--danger:#dc2626;--warning:#f59e0b;
+  --sidebar-bg:#1e293b;--sidebar-text:#e2e8f0;
+  --concept:#2563eb;--fact:#16a34a;--person:#dc2626;--funfact:#f59e0b;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:18px;line-height:1.7;color:var(--text);background:var(--bg);display:flex;min-height:100vh}
+
+.sidebar{width:220px;background:var(--sidebar-bg);color:var(--sidebar-text);padding:20px 0;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;overflow-y:auto}
+.sidebar .logo{padding:0 16px 16px;font-weight:800;font-size:1.1em;border-bottom:1px solid #334155}
+.sidebar .logo a{color:var(--sidebar-text);text-decoration:none}
+.sidebar nav{padding:12px 0;flex:1}
+.sidebar .section-title{padding:8px 16px;font-size:.7em;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin-top:8px}
+.sidebar a{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#cbd5e1;text-decoration:none;font-size:.85em;transition:background .15s}
+.sidebar a:hover{background:#334155}
+.sidebar a.active{background:var(--accent);color:#fff;font-weight:600}
+.sidebar a .icon{width:18px;text-align:center;font-size:.85em}
+.sidebar a.done .icon{color:var(--success)}
+.sidebar .progress-box{padding:12px 16px;border-top:1px solid #334155;margin-top:auto}
+.sidebar .progress-box .bar{height:6px;background:#334155;border-radius:3px;overflow:hidden;margin-top:6px}
+.sidebar .progress-box .bar-fill{height:100%;background:var(--success);border-radius:3px;transition:width .3s}
+.sidebar .progress-box span{font-size:.7em;color:#94a3b8}
+
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 28px;background:var(--card);border-bottom:1px solid #e2e8f0}
+.topbar .breadcrumb{font-size:.8em;color:var(--muted)}
+.topbar .breadcrumb a{color:var(--accent);text-decoration:none}
+.topbar .points{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--warning);font-size:.95em}
+.topbar .text-controls button{background:none;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.8em;margin-left:4px}
+
+.content-area{flex:1;display:flex;max-width:100%}
+.content{flex:1;padding:28px 32px;max-width:720px}
+.content h1{font-size:1.5em;font-weight:800;margin-bottom:4px;color:var(--sidebar-bg)}
+.content .subtitle{font-size:.85em;color:var(--muted);margin-bottom:20px}
+.content h2{font-size:1.15em;font-weight:700;margin:24px 0 10px;color:var(--sidebar-bg)}
+
+.info-box{background:#eff6ff;border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:16px 0;font-size:.9em}
+.fun-fact{background:#fefce8;border-left:4px solid var(--warning);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:16px 0;font-size:.9em}
+
+.question-block{background:var(--card);border:2px solid #e2e8f0;border-radius:var(--radius);padding:20px;margin:18px 0;box-shadow:var(--shadow)}
+.question-block h3{font-size:1em;margin-bottom:10px;color:var(--sidebar-bg)}
+.question-block .q-label{font-size:.75em;text-transform:uppercase;letter-spacing:1px;color:var(--accent);font-weight:700;margin-bottom:6px}
+
+.faktaruta{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius);margin-bottom:14px;overflow:hidden}
+.faktaruta-header{background:#dcfce7;padding:10px 14px;cursor:pointer;font-weight:700;font-size:.85em;color:#166534;display:flex;justify-content:space-between;align-items:center}
+.faktaruta-header:hover{background:#bbf7d0}
+.faktaruta-body{padding:10px 14px;font-size:.85em;line-height:1.6;display:none}
+.faktaruta-body.open{display:block}
+
+/* Matching exercise */
+.match-container{display:flex;gap:20px;margin:12px 0;flex-wrap:wrap}
+.match-col{flex:1;min-width:200px}
+.match-col h4{font-size:.8em;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px}
+.match-item{padding:12px 14px;border:2px solid #e2e8f0;border-radius:8px;margin:6px 0;font-size:.88em;cursor:pointer;transition:all .15s;background:var(--card)}
+.match-item:hover:not(.matched):not(.disabled){border-color:var(--accent);background:#eff6ff}
+.match-item.selected{border-color:var(--accent);background:#dbeafe;font-weight:600}
+.match-item.matched{border-color:var(--success);background:#dcfce7;cursor:default}
+.match-item.wrong-flash{border-color:var(--danger);background:#fee2e2}
+.match-item.disabled{opacity:.5;cursor:default}
+.match-item .match-label{font-size:.7em;color:var(--muted);text-transform:uppercase;margin-bottom:2px}
+
+/* Compare table */
+.compare-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.9em}
+.compare-table th{background:var(--sidebar-bg);color:#fff;padding:10px 14px;text-align:left;font-size:.85em}
+.compare-table td{padding:10px 14px;border-bottom:1px solid #e2e8f0;vertical-align:top}
+.compare-table tr:nth-child(even){background:#f8fafc}
+
+textarea.answer-box{width:100%;min-height:100px;border:2px solid #e2e8f0;border-radius:8px;padding:12px;font-family:inherit;font-size:.95em;resize:vertical;line-height:1.6}
+textarea.answer-box:focus{outline:none;border-color:var(--accent)}
+
+.word-count{font-size:.75em;color:var(--muted);margin-top:4px;text-align:right}
+
+.hint-btn{background:none;border:1px dashed var(--accent);color:var(--accent);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.8em;font-family:inherit;margin-top:8px;margin-right:6px}
+.hint-btn:hover{background:#eff6ff}
+.hint-box{margin-top:8px;padding:10px 14px;background:#eff6ff;border-radius:8px;font-size:.85em;display:none}
+.hint-box.show{display:block}
+
+.show-facit-btn{margin-top:10px;padding:8px 18px;background:#f1f5f9;border:2px solid #e2e8f0;border-radius:8px;cursor:pointer;font-family:inherit;font-size:.85em;font-weight:600}
+.show-facit-btn:hover{background:#e2e8f0}
+.facit-box{margin-top:10px;padding:14px;background:#fefce8;border:1px solid #fde68a;border-radius:8px;font-size:.9em;line-height:1.6;display:none}
+.facit-box.show{display:block}
+
+.self-assess{margin-top:12px;padding:14px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;display:none}
+.self-assess.show{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.self-assess span{font-size:.9em;font-weight:600}
+.assess-btn{padding:8px 20px;border-radius:8px;border:2px solid #e2e8f0;background:var(--card);cursor:pointer;font-family:inherit;font-size:.85em;font-weight:600;transition:all .15s}
+.assess-btn:hover{border-color:var(--accent);background:#dbeafe}
+.assess-btn.selected-yes{border-color:var(--success);background:#dcfce7;color:#166534}
+.assess-btn.selected-no{border-color:var(--danger);background:#fee2e2;color:#991b1b}
+.assess-btn:disabled{opacity:.5;cursor:default}
+
+.feedback{margin-top:12px;padding:12px 16px;border-radius:8px;font-size:.9em;display:none}
+.feedback.show{display:block}
+.feedback.correct{background:#dcfce7;color:#166534}
+.feedback.wrong{background:#fee2e2;color:#991b1b}
+.feedback.info{background:#dbeafe;color:#1e40af}
+
+.celebration{display:none;text-align:center;padding:12px;margin-top:12px;background:linear-gradient(135deg,#dcfce7,#dbeafe);border-radius:var(--radius);font-weight:600}
+.celebration.show{display:block}
+
+.nav-buttons{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0}
+.nav-btn{padding:10px 24px;border-radius:8px;font-size:.9em;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;border:none;display:inline-flex;align-items:center;gap:6px}
+.nav-btn.secondary{background:#f1f5f9;color:var(--text)}
+.nav-btn.secondary:hover{background:#e2e8f0}
+.nav-btn.primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25)}
+.nav-btn.primary:hover{background:#1d4ed8}
+
+.right-panel{width:200px;padding:20px 14px;flex-shrink:0}
+.tip-card{background:#fffacd;border-radius:5px;padding:18px 15px;box-shadow:3px 3px 10px rgba(0,0,0,0.1),0 0 0 1px rgba(0,0,0,0.05);transform:rotate(-2deg);position:relative;margin-bottom:20px;margin-top:12px}
+.tip-card::before{content:"";position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:40px;height:15px;background:rgba(200,180,140,0.6);border-radius:2px}
+.tip-card h4{font-size:13px;font-weight:600;color:#7a6a4a;margin-bottom:10px}
+.tip-card p{font-size:12px;line-height:1.5;color:#6a5a3a}
+
+.pause-btn{position:fixed;bottom:30px;right:30px;background:#c8f0d0;border:none;padding:15px 25px;border-radius:30px;font-family:inherit;font-size:15px;color:var(--text);cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,0.1);transition:all 0.2s ease;z-index:50}
+.pause-btn:hover{transform:scale(1.05);background:#88c498}
+.pause-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
+.pause-overlay.show{display:flex}
+.pause-modal{background:var(--card);border-radius:16px;padding:36px;text-align:center;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.pause-modal h2{font-size:1.3em;margin-bottom:12px}
+.pause-modal p{font-size:.95em;color:var(--muted);margin-bottom:20px}
+.pause-modal button{padding:12px 28px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:1em;cursor:pointer;font-family:inherit;font-weight:600}
+
+@media(max-width:960px){.sidebar{width:180px}.main{margin-left:180px}.right-panel{width:170px}}
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}.right-panel{display:none}.content{padding:20px}}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo"><a href="index.html">Stormaktstiden</a></div>
+  <nav>
+    <div class="section-title">Del 5: Testa dig själv</div>
+    <a href="del5-01-kronologi.html" id="nav-del5-01"><span class="icon">&#9675;</span> Kronologi</a>
+    <a href="del5-02-nyckelbegrepp.html" id="nav-del5-02"><span class="icon">&#9675;</span> Nyckelbegrepp</a>
+    <a href="del5-03-faktafragor.html" id="nav-del5-03"><span class="icon">&#9675;</span> Faktafrågor</a>
+    <a href="del5-04-forklaringsfragor.html" id="nav-del5-04"><span class="icon">&#9675;</span> Förklaringsfrågor</a>
+    <a href="del5-05-resonemangsfragor.html" id="nav-del5-05"><span class="icon">&#9675;</span> Resonemangsfrågor</a>
+    <a href="del5-06-kallkritik.html" id="nav-del5-06"><span class="icon">&#9675;</span> Källkritik</a>
+    <a href="del5-07-historiebruk.html" id="nav-del5-07"><span class="icon">&#9675;</span> Historiebruk</a>
+    <a href="del5-08-samband.html" class="active" id="nav-del5-08"><span class="icon">&#9654;</span> Samband</a>
+    <a href="del5-quiz.html" id="nav-del5-quiz"><span class="icon">&#9675;</span> Resultat</a>
+  </nav>
+  <div class="progress-box">
+    <span>Del 5: <span id="progressText">0/9</span></span>
+    <div class="bar"><div class="bar-fill" id="progressBar" style="width:0%"></div></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="breadcrumb"><a href="index.html">Stormaktstiden</a> &rsaquo; Del 5 &rsaquo; Samband</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="text-controls"><button onclick="changeSize(-1)">A-</button><button onclick="changeSize(1)">A+</button></div>
+      <div class="points" id="pointsDisplay">0 p</div>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div class="content" id="contentArea">
+      <div class="subtitle">Del 5 &middot; Sida 8 av 8</div>
+      <h1>Samband och resonemang</h1>
+
+      <p>Historia handlar om att se <strong>samband</strong> &ndash; hur en sak leder till en annan, vad som förändrades och vad som förblev likadant. Här övar du på tre typer av historiskt tänkande!</p>
+
+      <!-- ORSAK-VERKAN -->
+      <h2>Orsak och verkan</h2>
+
+      <div class="faktaruta">
+        <div class="faktaruta-header" onclick="toggleFakta('fakta-ov')">Kom ihåg: Orsak och verkan i historien <span id="fakta-ov-arrow">&#9660;</span></div>
+        <div class="faktaruta-body" id="fakta-ov">En <strong>orsak</strong> är det som gör att något händer. En <strong>verkan</strong> är det som blir resultatet. I historien är det sällan bara en orsak &ndash; ofta samverkar flera orsaker. Tänk på det som en kedja: A leder till B som leder till C.</div>
+      </div>
+
+      <p>Klicka på en orsak till vänster, sedan på rätt verkan till höger. Para ihop alla tre!</p>
+
+      <div class="question-block" id="match-block">
+        <div class="q-label">Orsak &rarr; Verkan &ndash; Para ihop</div>
+        <div class="match-container">
+          <div class="match-col" id="orsak-col">
+            <h4>Orsak</h4>
+            <div class="match-item" id="o0" onclick="selectOrsak(0)">
+              <div class="match-label">Orsak 1</div>
+              Stormakten vilade på tillfällig svaghet hos grannarna + franska subsidier. Peter I moderniserade Ryssland.
+            </div>
+            <div class="match-item" id="o1" onclick="selectOrsak(1)">
+              <div class="match-label">Orsak 2</div>
+              Stormaktens krig krävde ständiga soldatrekryteringar och höga skatter.
+            </div>
+            <div class="match-item" id="o2" onclick="selectOrsak(2)">
+              <div class="match-label">Orsak 3</div>
+              Karl XII vägrade sluta fred och marscherade in i Ryssland.
+            </div>
+          </div>
+          <div class="match-col" id="verkan-col">
+            <h4>Verkan</h4>
+            <div class="match-item" id="v0" onclick="selectVerkan(0)">
+              <div class="match-label">Verkan A</div>
+              Sverige förlorade sin armé vid Poltava och nästan alla sina områden.
+            </div>
+            <div class="match-item" id="v1" onclick="selectVerkan(1)">
+              <div class="match-label">Verkan B</div>
+              Koalitionen kunde utnyttja Sveriges svagheter &ndash; resurserna räckte inte mot flera fiender.
+            </div>
+            <div class="match-item" id="v2" onclick="selectVerkan(2)">
+              <div class="match-label">Verkan C</div>
+              Bönderna betalade högt pris, förlorade söner, kvinnor fick ta över gårdarna ensamma.
+            </div>
+          </div>
+        </div>
+        <div class="feedback" id="match-feedback"></div>
+      </div>
+
+      <!-- JÄMFÖRELSE -->
+      <h2>Jämförelse: Sverige före och efter stormaktstiden</h2>
+
+      <div class="faktaruta">
+        <div class="faktaruta-header" onclick="toggleFakta('fakta-jmf')">Kom ihåg: Att jämföra i historia <span id="fakta-jmf-arrow">&#9660;</span></div>
+        <div class="faktaruta-body" id="fakta-jmf">En jämförelse handlar om att hitta <strong>likheter</strong> (vad som är lika) och <strong>skillnader</strong> (vad som är olika). I historia jämför man ofta före och efter en tidsperiod, eller hur olika grupper påverkades.</div>
+      </div>
+
+      <table class="compare-table">
+        <tr><th></th><th>Före stormaktstiden</th><th>Efter stormaktstiden</th></tr>
+        <tr><td><strong>Likheter</strong></td><td colspan="2">Sverige var fortfarande ett kungarike med bönderna som största grupp</td></tr>
+        <tr><td><strong>Ställning</strong></td><td>Ett av Europas mäktigaste länder med stora områden runt Östersjön</td><td>Förlorat nästan alla erövrade landområden, inte längre en stormakt</td></tr>
+        <tr><td><strong>Styrelseskick</strong></td><td>Kungens makt ökade, envälde under Karl XI</td><td>Enväldet ersattes av frihetstiden &ndash; mer makt till riksdagen</td></tr>
+      </table>
+
+      <div class="question-block" id="q2-block">
+        <div class="q-label">Jämförelsefråga &ndash; Öppen</div>
+        <div class="faktaruta">
+          <div class="faktaruta-header" onclick="toggleFakta('fakta2')">Kom ihåg: Sverige före och efter <span id="fakta2-arrow">&#9660;</span></div>
+          <div class="faktaruta-body" id="fakta2">Före stormaktstiden var Sverige ett av Europas mäktigaste länder. Efter var det ett litet land som förlorat nästan alla sina besittningar. Men grundstrukturen bestod: det var fortfarande ett kungarike med bönder som största grupp. Den stora förändringen var att Sverige gick från stormakt till småstat och från envälde till frihetstid.</div>
+        </div>
+        <h3>Vad var den viktigaste skillnaden för Sverige före och efter stormaktstiden? Förklara varför du tycker just det.</h3>
+        <textarea class="answer-box" id="q2-answer" placeholder="Skriv ditt svar här (minst 8 ord)..." oninput="countWords('q2')"></textarea>
+        <div class="word-count" id="q2-wc">0 ord</div>
+        <button class="hint-btn" onclick="showHint('q2-hint1')">Ledtråd 1</button>
+        <button class="hint-btn" onclick="showHint('q2-hint2')">Ledtråd 2</button>
+        <div class="hint-box" id="q2-hint1">Tänk på vad som förändrades mest: ställningen i Europa, styrelseskicket, eller livet för vanliga människor?</div>
+        <div class="hint-box" id="q2-hint2">Det finns inget rätt svar &ndash; men du måste förklara VARFÖR du tycker som du gör.</div>
+        <button class="show-facit-btn" id="q2-facit-btn" onclick="showFacit('q2')">Visa facit</button>
+        <div class="facit-box" id="q2-facit"><strong>Exempelsvar:</strong> Den viktigaste skillnaden var att Sverige gick från att vara en av Europas stormakter till att bli ett litet land utan stora besittningar. Det förändrade allt: Sverige behövde inte längre ha en enorm armé, skatterna kunde sänkas, och landet fick börja om. Det påverkade alla &ndash; från kungen till den vanligaste bonden.</div>
+        <div class="self-assess" id="q2-assess">
+          <span>Fick du med det viktiga?</span>
+          <button class="assess-btn" onclick="selfAssess('q2','ja')">Ja</button>
+          <button class="assess-btn" onclick="selfAssess('q2','nej')">Nej</button>
+        </div>
+        <div class="feedback" id="q2-feedback"></div>
+      </div>
+
+      <!-- KONTINUITET OCH FÖRÄNDRING -->
+      <h2>Kontinuitet och förändring</h2>
+
+      <div class="faktaruta">
+        <div class="faktaruta-header" onclick="toggleFakta('fakta-kf')">Kom ihåg: Kontinuitet och förändring <span id="fakta-kf-arrow">&#9660;</span></div>
+        <div class="faktaruta-body" id="fakta-kf"><strong>Kontinuitet</strong> = det som fortsatte vara likadant. <strong>Förändring</strong> = det som blev annorlunda. I historia förändras sällan allt på en gång &ndash; vissa saker fortsätter medan andra ändras. Att se detta är en viktig historisk förmåga.</div>
+      </div>
+
+      <div class="question-block" id="q3-block">
+        <div class="q-label">Kontinuitet eller förändring? Klicka rätt!</div>
+        <p style="font-size:.9em;margin-bottom:12px">Klicka på <strong>K</strong> (Kontinuitet) om det fortsatte vara likadant, eller <strong>F</strong> (Förändring) om det blev annorlunda efter stormaktstiden.</p>
+
+        <div id="kf-items"></div>
+
+        <div class="feedback" id="q3-feedback"></div>
+      </div>
+
+      <div class="celebration" id="celebration"></div>
+
+      <div class="nav-buttons">
+        <a href="del5-07-historiebruk.html" class="nav-btn secondary">&larr; Historiebruk</a>
+        <a href="del5-quiz.html" class="nav-btn primary" id="nextBtn">Nästa: Resultat &rarr;</a>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="tip-card">
+        <h4>Tips till Buster</h4>
+        <p>Samband är som kedjor: varje länk hänger ihop med nästa. Om du vet orsaken kan du ofta gissa verkan &ndash; och tvärtom!</p>
+      </div>
+      <div class="tip-card">
+        <h4>Strategi</h4>
+        <p>Vid matchning: läs alla orsaker först, sedan alla verkningar. Börja med den du är säkrast på. Precis som i en skidtävling &ndash; ta det enklaste hindret först!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="pause-btn" onclick="showPause()">Jag behöver en paus</button>
+<div class="pause-overlay" id="pauseOverlay">
+  <div class="pause-modal">
+    <h2 id="pauseTitle">Pausdags!</h2>
+    <p id="pauseMsg">Gör 10 armhävningar!</p>
+    <button onclick="closePause()">Jag är redo igen!</button>
+  </div>
+</div>
+
+<script>
+const PREFIX='buster-so-stormaktstiden-';
+const PAGE_ID='del5-08';
+let startTime=Date.now();
+let totalPts=0;
+let sections={match:false,q2:false,kf:false};
+
+function toggleFakta(id){
+  const el=document.getElementById(id);
+  el.classList.toggle('open');
+  const arrow=document.getElementById(id+'-arrow');
+  arrow.innerHTML=el.classList.contains('open')?'&#9650;':'&#9660;';
+}
+
+function countWords(qid){
+  const text=document.getElementById(qid+'-answer').value.trim();
+  const words=text?text.split(/\s+/).length:0;
+  document.getElementById(qid+'-wc').textContent=words+' ord';
+}
+
+function showHint(id){document.getElementById(id).classList.add('show');}
+
+// === MATCHING EXERCISE ===
+const correctMatches={0:1, 1:2, 2:0}; // orsak idx -> verkan idx
+let selectedOrsak=null;
+let matchedPairs=0;
+let matchedOrsaker={};
+
+function selectOrsak(idx){
+  if(matchedOrsaker[idx]) return;
+  selectedOrsak=idx;
+  document.querySelectorAll('#orsak-col .match-item').forEach((el,i)=>{
+    if(!matchedOrsaker[i]) el.className='match-item'+(i===idx?' selected':'');
+  });
+}
+
+function selectVerkan(idx){
+  if(selectedOrsak===null) return;
+  const correct=correctMatches[selectedOrsak];
+  const oEl=document.getElementById('o'+selectedOrsak);
+  const vEl=document.getElementById('v'+idx);
+  if(idx===correct){
+    oEl.className='match-item matched';
+    vEl.className='match-item matched';
+    matchedOrsaker[selectedOrsak]=true;
+    matchedPairs++;
+    selectedOrsak=null;
+    if(matchedPairs===3){
+      sections.match=true;
+      addPoints(10);
+      totalPts+=10;
+      const fb=document.getElementById('match-feedback');
+      fb.className='feedback correct show';
+      fb.textContent='Alla par rätt! Du ser sambanden. +10 poäng';
+      checkAllDone();
+      saveStats();
+    }
+  } else {
+    vEl.className='match-item wrong-flash';
+    setTimeout(()=>{vEl.className='match-item';},600);
+  }
+}
+
+// === OPEN QUESTION ===
+function showFacit(qid){
+  document.getElementById(qid+'-facit').classList.add('show');
+  document.getElementById(qid+'-facit-btn').style.display='none';
+  document.getElementById(qid+'-assess').classList.add('show');
+  const answer=document.getElementById(qid+'-answer').value.trim();
+  const answers=JSON.parse(localStorage.getItem(PREFIX+'del5-08-answers')||'{}');
+  answers[qid]=answer;
+  localStorage.setItem(PREFIX+'del5-08-answers',JSON.stringify(answers));
+}
+
+function selfAssess(qid,val){
+  if(sections[qid]) return;
+  sections[qid]=true;
+  const btns=document.getElementById(qid+'-assess').querySelectorAll('.assess-btn');
+  btns.forEach(b=>{
+    b.disabled=true;
+    if(b.textContent.toLowerCase()===val) b.classList.add(val==='ja'?'selected-yes':'selected-no');
+  });
+  const fb=document.getElementById(qid+'-feedback');
+  if(val==='ja'){
+    fb.className='feedback correct show';
+    fb.textContent='Bra jämförelse, Buster! +10 poäng';
+  } else {
+    fb.className='feedback info show';
+    fb.textContent='Bra att du försökte! Kolla exempelsvaret. +10 poäng.';
+  }
+  addPoints(10);
+  totalPts+=10;
+  const assessData=JSON.parse(localStorage.getItem(PREFIX+'del5-08-assess')||'{}');
+  assessData[qid]=val;
+  localStorage.setItem(PREFIX+'del5-08-assess',JSON.stringify(assessData));
+  checkAllDone();
+  saveStats();
+}
+
+// === KONTINUITET/FÖRÄNDRING ===
+const kfData=[
+  {text:'Bönderna fortsatte att betala skatter', answer:'K'},
+  {text:'Ståndssamhället (adel, präster, borgare, bönder) bestod', answer:'K'},
+  {text:'Indelningsverket formaliserade soldattjänsten', answer:'F'},
+  {text:'Enväldet ersattes av frihetstiden', answer:'F'},
+  {text:'Sverige var fortfarande ett självständigt kungarike', answer:'K'},
+  {text:'Sverige förlorade sina besittningar och blev en småstat', answer:'F'}
+];
+let kfAnswered=0;
+let kfCorrect=0;
+
+function renderKF(){
+  const container=document.getElementById('kf-items');
+  kfData.forEach((item,i)=>{
+    const div=document.createElement('div');
+    div.style.cssText='display:flex;align-items:center;gap:10px;margin:8px 0;padding:10px 14px;background:var(--card);border:2px solid #e2e8f0;border-radius:8px';
+    div.id='kf-'+i;
+    div.innerHTML=`
+      <div style="display:flex;gap:6px">
+        <button onclick="answerKF(${i},'K')" id="kf-${i}-K" style="width:36px;height:36px;border:2px solid #e2e8f0;border-radius:6px;background:var(--card);cursor:pointer;font-weight:700;font-family:inherit;font-size:.85em">K</button>
+        <button onclick="answerKF(${i},'F')" id="kf-${i}-F" style="width:36px;height:36px;border:2px solid #e2e8f0;border-radius:6px;background:var(--card);cursor:pointer;font-weight:700;font-family:inherit;font-size:.85em">F</button>
+      </div>
+      <span style="font-size:.9em;flex:1">${item.text}</span>
+      <span id="kf-${i}-result" style="font-size:.85em;font-weight:700;min-width:20px"></span>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function answerKF(idx,choice){
+  const kBtn=document.getElementById('kf-'+idx+'-K');
+  const fBtn=document.getElementById('kf-'+idx+'-F');
+  if(kBtn.disabled) return;
+  kBtn.disabled=true;
+  fBtn.disabled=true;
+  const correct=kfData[idx].answer;
+  const result=document.getElementById('kf-'+idx+'-result');
+  const row=document.getElementById('kf-'+idx);
+  if(choice===correct){
+    result.textContent='Rätt!';
+    result.style.color='var(--success)';
+    row.style.borderColor='var(--success)';
+    row.style.background='#dcfce7';
+    kfCorrect++;
+  } else {
+    result.textContent=correct==='K'?'K':'F';
+    result.style.color='var(--danger)';
+    row.style.borderColor='var(--danger)';
+    row.style.background='#fee2e2';
+  }
+  if(choice==='K'){kBtn.style.background='#dbeafe';kBtn.style.borderColor='var(--accent)';}
+  else{fBtn.style.background='#dbeafe';fBtn.style.borderColor='var(--accent)';}
+  kfAnswered++;
+  if(kfAnswered===kfData.length){
+    sections.kf=true;
+    const pts=kfCorrect>=4?10:5;
+    addPoints(pts);
+    totalPts+=pts;
+    const fb=document.getElementById('q3-feedback');
+    fb.className='feedback '+(kfCorrect>=4?'correct':'info')+' show';
+    fb.textContent=kfCorrect+' av '+kfData.length+' rätt! +'+pts+' poäng';
+    checkAllDone();
+    saveStats();
+  }
+}
+
+function checkAllDone(){
+  if(sections.match&&sections.q2&&sections.kf){
+    markComplete();
+    document.getElementById('celebration').textContent='Samband och resonemang avklarat! Du tänker som en riktig historiker, Buster!';
+    document.getElementById('celebration').classList.add('show');
+  }
+}
+
+function getPoints(){return parseInt(localStorage.getItem(PREFIX+'points')||'0')}
+function addPoints(n){const p=getPoints()+n;localStorage.setItem(PREFIX+'points',p.toString());updatePointsDisplay();return p;}
+function updatePointsDisplay(){document.getElementById('pointsDisplay').textContent=getPoints()+' p';}
+
+function getProgress(){return JSON.parse(localStorage.getItem(PREFIX+'progress')||'{}')}
+function markComplete(){
+  const p=getProgress();p[PAGE_ID]=true;
+  localStorage.setItem(PREFIX+'progress',JSON.stringify(p));
+  updateNav();
+}
+function saveStats(){
+  const stats=JSON.parse(localStorage.getItem(PREFIX+'pageStats')||'{}');
+  stats[PAGE_ID]={time:Math.round((Date.now()-startTime)/1000),matchPairs:matchedPairs,kfCorrect:kfCorrect,points:totalPts,timestamp:new Date().toISOString()};
+  localStorage.setItem(PREFIX+'pageStats',JSON.stringify(stats));
+}
+
+function updateNav(){
+  const progress=getProgress();
+  const pages=['del5-01','del5-02','del5-03','del5-04','del5-05','del5-06','del5-07','del5-08','del5-quiz'];
+  let done=0;
+  pages.forEach(p=>{
+    const el=document.getElementById('nav-'+p);
+    if(el&&progress[p]){el.classList.add('done');el.querySelector('.icon').innerHTML='&#10003;';done++;}
+  });
+  document.getElementById('progressText').textContent=done+'/'+pages.length;
+  document.getElementById('progressBar').style.width=Math.round(done/pages.length*100)+'%';
+}
+
+function changeSize(d){
+  const el=document.getElementById('contentArea');
+  const current=parseFloat(getComputedStyle(el).fontSize);
+  el.style.fontSize=(current+d*2)+'px';
+}
+
+const pauseMsgs=[
+  {t:'Rör på dig!',m:'Gör 10 armhävningar! Eller spring till köket och tillbaka.'},
+  {t:'Andas!',m:'Stäng ögonen. Andas in i 4 sekunder, håll i 4, andas ut i 4. Gör det 3 gånger.'},
+  {t:'Kolla ut!',m:'Titta ut genom fönstret i 30 sekunder. Kan du se något som rör sig?'},
+  {t:'Sträcka!',m:'Ställ dig upp, sträck armarna över huvudet och böj dig ner mot tårna.'},
+  {t:'Hjärnvila!',m:'Tänk på din favorit-MTB-led. Visualisera hela banan från start till mål.'}
+];
+function showPause(){
+  const msg=pauseMsgs[Math.floor(Math.random()*pauseMsgs.length)];
+  document.getElementById('pauseTitle').textContent=msg.t;
+  document.getElementById('pauseMsg').textContent=msg.m;
+  document.getElementById('pauseOverlay').classList.add('show');
+}
+function closePause(){document.getElementById('pauseOverlay').classList.remove('show')}
+
+function loadPrevious(){
+  const progress=getProgress();
+  if(progress[PAGE_ID]){
+    document.getElementById('celebration').textContent='Du har redan klarat denna sida!';
+    document.getElementById('celebration').classList.add('show');
+  }
+}
+
+updatePointsDisplay();updateNav();renderKF();loadPrevious();
+</script>
+</body>
+</html>

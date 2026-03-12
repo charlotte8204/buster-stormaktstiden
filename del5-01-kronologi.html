@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kronologi - Testa dig själv - Stormaktstiden</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f1f5f9;--card:#fff;--text:#1e293b;--muted:#64748b;
+  --accent:#2563eb;--success:#16a34a;--danger:#dc2626;--warning:#f59e0b;
+  --sidebar-bg:#1e293b;--sidebar-text:#e2e8f0;
+  --concept:#2563eb;--fact:#16a34a;--person:#dc2626;--funfact:#f59e0b;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:18px;line-height:1.7;color:var(--text);background:var(--bg);display:flex;min-height:100vh}
+
+.sidebar{width:220px;background:var(--sidebar-bg);color:var(--sidebar-text);padding:20px 0;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;overflow-y:auto}
+.sidebar .logo{padding:0 16px 16px;font-weight:800;font-size:1.1em;border-bottom:1px solid #334155}
+.sidebar .logo a{color:var(--sidebar-text);text-decoration:none}
+.sidebar nav{padding:12px 0;flex:1}
+.sidebar .section-title{padding:8px 16px;font-size:.7em;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin-top:8px}
+.sidebar a{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#cbd5e1;text-decoration:none;font-size:.85em;transition:background .15s}
+.sidebar a:hover{background:#334155}
+.sidebar a.active{background:var(--accent);color:#fff;font-weight:600}
+.sidebar a .icon{width:18px;text-align:center;font-size:.85em}
+.sidebar a.done .icon{color:var(--success)}
+.sidebar .progress-box{padding:12px 16px;border-top:1px solid #334155;margin-top:auto}
+.sidebar .progress-box .bar{height:6px;background:#334155;border-radius:3px;overflow:hidden;margin-top:6px}
+.sidebar .progress-box .bar-fill{height:100%;background:var(--success);border-radius:3px;transition:width .3s}
+.sidebar .progress-box span{font-size:.7em;color:#94a3b8}
+
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:12px 28px;background:var(--card);border-bottom:1px solid #e2e8f0}
+.topbar .breadcrumb{font-size:.8em;color:var(--muted)}
+.topbar .breadcrumb a{color:var(--accent);text-decoration:none}
+.topbar .points{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--warning);font-size:.95em}
+.topbar .text-controls button{background:none;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.8em;margin-left:4px}
+
+.content-area{flex:1;display:flex;max-width:100%}
+.content{flex:1;padding:28px 32px;max-width:720px}
+.content h1{font-size:1.5em;font-weight:800;margin-bottom:4px;color:var(--sidebar-bg)}
+.content .subtitle{font-size:.85em;color:var(--muted);margin-bottom:20px}
+
+.info-box{background:#eff6ff;border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:16px 0;font-size:.9em}
+.fun-fact{background:#fefce8;border-left:4px solid var(--warning);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:16px 0;font-size:.9em}
+
+.event-card{background:var(--card);border:2px solid #e2e8f0;border-radius:var(--radius);padding:16px;margin:10px 0;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px}
+.event-card .event-text{flex:1;font-size:.95em}
+.event-card .number-btns{display:flex;gap:4px;flex-wrap:wrap}
+.event-card .number-btns button{width:32px;height:32px;border:2px solid #e2e8f0;border-radius:6px;background:var(--card);cursor:pointer;font-weight:700;font-size:.8em;font-family:inherit;transition:all .15s}
+.event-card .number-btns button:hover:not(:disabled){border-color:var(--accent);background:#dbeafe}
+.event-card .number-btns button.selected{border-color:var(--accent);background:var(--accent);color:#fff}
+.event-card .number-btns button:disabled{cursor:default;opacity:.5}
+.event-card.correct-card{border-color:var(--success);background:#dcfce7}
+.event-card.wrong-card{border-color:var(--danger);background:#fee2e2}
+.event-card .result-badge{font-weight:700;font-size:.85em;min-width:60px;text-align:center}
+
+.check-btn{margin-top:16px;padding:12px 28px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:1em;cursor:pointer;font-family:inherit;font-weight:600}
+.check-btn:disabled{opacity:.4;cursor:not-allowed}
+.check-btn:hover:not(:disabled){background:#1d4ed8}
+
+.feedback{margin-top:12px;padding:12px 16px;border-radius:8px;font-size:.9em;display:none}
+.feedback.show{display:block}
+.feedback.correct{background:#dcfce7;color:#166534}
+.feedback.wrong{background:#fee2e2;color:#991b1b}
+.feedback.info{background:#dbeafe;color:#1e40af}
+
+.celebration{display:none;text-align:center;padding:12px;margin-top:12px;background:linear-gradient(135deg,#dcfce7,#dbeafe);border-radius:var(--radius);font-weight:600}
+.celebration.show{display:block}
+
+.nav-buttons{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0}
+.nav-btn{padding:10px 24px;border-radius:8px;font-size:.9em;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;border:none;display:inline-flex;align-items:center;gap:6px}
+.nav-btn.secondary{background:#f1f5f9;color:var(--text)}
+.nav-btn.secondary:hover{background:#e2e8f0}
+.nav-btn.primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25)}
+.nav-btn.primary:hover{background:#1d4ed8}
+.nav-btn.locked{opacity:.35;cursor:not-allowed;pointer-events:none}
+
+.right-panel{width:200px;padding:20px 14px;flex-shrink:0}
+.tip-card{background:#fffacd;border-radius:5px;padding:18px 15px;box-shadow:3px 3px 10px rgba(0,0,0,0.1),0 0 0 1px rgba(0,0,0,0.05);transform:rotate(-2deg);position:relative;margin-bottom:20px;margin-top:12px}
+.tip-card::before{content:"";position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:40px;height:15px;background:rgba(200,180,140,0.6);border-radius:2px}
+.tip-card h4{font-size:13px;font-weight:600;color:#7a6a4a;margin-bottom:10px}
+.tip-card p{font-size:12px;line-height:1.5;color:#6a5a3a}
+
+.pause-btn{position:fixed;bottom:30px;right:30px;background:#c8f0d0;border:none;padding:15px 25px;border-radius:30px;font-family:inherit;font-size:15px;color:var(--text);cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,0.1);transition:all 0.2s ease;z-index:50}
+.pause-btn:hover{transform:scale(1.05);background:#88c498}
+.pause-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
+.pause-overlay.show{display:flex}
+.pause-modal{background:var(--card);border-radius:16px;padding:36px;text-align:center;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.pause-modal h2{font-size:1.3em;margin-bottom:12px}
+.pause-modal p{font-size:.95em;color:var(--muted);margin-bottom:20px}
+.pause-modal button{padding:12px 28px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:1em;cursor:pointer;font-family:inherit;font-weight:600}
+
+@media(max-width:960px){.sidebar{width:180px}.main{margin-left:180px}.right-panel{width:170px}}
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}.right-panel{display:none}.content{padding:20px}}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo"><a href="index.html">Stormaktstiden</a></div>
+  <nav>
+    <div class="section-title">Del 5: Testa dig själv</div>
+    <a href="del5-01-kronologi.html" class="active" id="nav-del5-01"><span class="icon">&#9654;</span> Kronologi</a>
+    <a href="del5-02-nyckelbegrepp.html" id="nav-del5-02"><span class="icon">&#9675;</span> Nyckelbegrepp</a>
+    <a href="del5-03-faktafragor.html" id="nav-del5-03"><span class="icon">&#9675;</span> Faktafrågor</a>
+    <a href="del5-04-forklaringsfragor.html" id="nav-del5-04"><span class="icon">&#9675;</span> Förklaringsfrågor</a>
+    <a href="del5-05-resonemangsfragor.html" id="nav-del5-05"><span class="icon">&#9675;</span> Resonemangsfrågor</a>
+    <a href="del5-06-kallkritik.html" id="nav-del5-06"><span class="icon">&#9675;</span> Källkritik</a>
+    <a href="del5-07-historiebruk.html" id="nav-del5-07"><span class="icon">&#9675;</span> Historiebruk</a>
+    <a href="del5-08-samband.html" id="nav-del5-08"><span class="icon">&#9675;</span> Samband</a>
+    <a href="del5-quiz.html" id="nav-del5-quiz"><span class="icon">&#9675;</span> Resultat</a>
+  </nav>
+  <div class="progress-box">
+    <span>Del 5: <span id="progressText">0/9</span></span>
+    <div class="bar"><div class="bar-fill" id="progressBar" style="width:0%"></div></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="breadcrumb"><a href="index.html">Stormaktstiden</a> &rsaquo; Del 5 &rsaquo; Kronologi</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="text-controls"><button onclick="changeSize(-1)">A-</button><button onclick="changeSize(1)">A+</button></div>
+      <div class="points" id="pointsDisplay">0 p</div>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div class="content" id="contentArea">
+      <div class="subtitle">Del 5 &middot; Sida 1 av 9</div>
+      <h1>Sortera händelserna</h1>
+
+      <p>Kan du placera stormaktstidens viktigaste händelser i rätt ordning? Klicka på siffran som visar vilken plats händelsen ska ha i tidslinjen (1 = äldst, 11 = senast).</p>
+
+      <div class="info-box">
+        <strong>Kom ihåg:</strong> Stormaktstiden varade ungefär 1611&ndash;1721. Det började med Gustav II Adolf och slutade med att Sverige förlorade sina besittningar efter det stora nordiska kriget. Tänk i tre faser: uppgång (Gustav II Adolf), höjdpunkt (Karl X Gustav &ndash; Karl XI), och fall (Karl XII).
+      </div>
+
+      <div id="eventsContainer"></div>
+
+      <button class="check-btn" id="checkBtn" onclick="checkOrder()" disabled>Kontrollera ordningen</button>
+
+      <div class="feedback correct" id="fbCorrect"></div>
+      <div class="feedback wrong" id="fbWrong"></div>
+
+      <div class="celebration" id="celebration"></div>
+
+      <div id="correctOrderBox" style="display:none;margin-top:16px;padding:16px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">
+        <h4 style="font-size:.9em;margin-bottom:10px;color:var(--muted)">Rätt ordning:</h4>
+        <ol id="correctList" style="font-size:.9em;padding-left:20px;line-height:2"></ol>
+      </div>
+
+      <div class="nav-buttons">
+        <a href="index.html" class="nav-btn secondary">&larr; Översikt</a>
+        <a href="del5-02-nyckelbegrepp.html" class="nav-btn primary" id="nextBtn">Nästa: Nyckelbegrepp &rarr;</a>
+      </div>
+    </div>
+
+    <div class="right-panel">
+      <div class="tip-card">
+        <h4>Tips till Buster</h4>
+        <p>Tänk på det som en skidtävling &ndash; varje händelse är en kontrollpunkt. Vilken kommer först på banan?</p>
+      </div>
+      <div class="tip-card">
+        <h4>Strategi</h4>
+        <p>Börja med de årtal du är säkrast på. Sen kan du räkna ut de andra genom att tänka: "Var det före eller efter?"</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="pause-btn" onclick="showPause()">Jag behöver en paus</button>
+<div class="pause-overlay" id="pauseOverlay">
+  <div class="pause-modal">
+    <h2 id="pauseTitle">Pausdags!</h2>
+    <p id="pauseMsg">Gör 10 armhävningar!</p>
+    <button onclick="closePause()">Jag är redo igen!</button>
+  </div>
+</div>
+
+<script>
+const PREFIX='buster-so-stormaktstiden-';
+const PAGE_ID='del5-01';
+let startTime=Date.now();
+
+const events = [
+  {id:0, year:1611, text:'Gustav II Adolf blir kung'},
+  {id:1, year:1628, text:'Vasaskeppet sjunker på sin jungfruresa'},
+  {id:2, year:1630, text:'Sverige går in i trettioåriga kriget'},
+  {id:3, year:1648, text:'Westfaliska freden avslutar trettioåriga kriget'},
+  {id:4, year:1658, text:'Tåget över Bält &ndash; Karl X Gustav marscherar över isen'},
+  {id:5, year:1680, text:'Karl XI inför envälde och genomför reduktionen'},
+  {id:6, year:1697, text:'Karl XII blir kung vid 15 års ålder'},
+  {id:7, year:1700, text:'Det stora nordiska kriget börjar'},
+  {id:8, year:1709, text:'Svenska armén besegras vid Poltava'},
+  {id:9, year:1718, text:'Karl XII dör vid Fredrikshald'},
+  {id:10, year:1721, text:'Freden i Nystad &ndash; stormaktstiden är slut'}
+];
+
+const NUM_EVENTS = events.length;
+let selections = {};
+let checked = false;
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function renderEvents(){
+  const container=document.getElementById('eventsContainer');
+  const shuffled=shuffle(events);
+  container.innerHTML='';
+  shuffled.forEach(ev=>{
+    const card=document.createElement('div');
+    card.className='event-card';
+    card.id='event-'+ev.id;
+    let btnsHtml='<div class="number-btns">';
+    for(let i=1;i<=NUM_EVENTS;i++){
+      btnsHtml+=`<button onclick="selectNumber(${ev.id},${i})" id="btn-${ev.id}-${i}">${i}</button>`;
+    }
+    btnsHtml+='</div>';
+    card.innerHTML=`<div class="event-text">${ev.text}</div>${btnsHtml}`;
+    container.appendChild(card);
+  });
+}
+
+function selectNumber(eventId, num){
+  if(checked) return;
+  // Remove previous selection for this event
+  if(selections[eventId]!==undefined){
+    const oldBtn=document.getElementById('btn-'+eventId+'-'+selections[eventId]);
+    if(oldBtn) oldBtn.classList.remove('selected');
+  }
+  // Remove this number from any other event
+  Object.keys(selections).forEach(eid=>{
+    if(parseInt(eid)!==eventId && selections[eid]===num){
+      const oldBtn=document.getElementById('btn-'+eid+'-'+num);
+      if(oldBtn) oldBtn.classList.remove('selected');
+      delete selections[eid];
+    }
+  });
+  selections[eventId]=num;
+  document.getElementById('btn-'+eventId+'-'+num).classList.add('selected');
+  // Enable check button if all assigned
+  const assigned=Object.keys(selections).length;
+  document.getElementById('checkBtn').disabled=assigned<NUM_EVENTS;
+}
+
+function checkOrder(){
+  if(checked) return;
+  checked=true;
+  let correctCount=0;
+  // Correct order: sort events by year, the correct position is index+1
+  const sorted=[...events].sort((a,b)=>a.year-b.year);
+  const correctMap={};
+  sorted.forEach((ev,i)=>{correctMap[ev.id]=i+1;});
+
+  events.forEach(ev=>{
+    const card=document.getElementById('event-'+ev.id);
+    const chosen=selections[ev.id];
+    const correct=correctMap[ev.id];
+    if(chosen===correct){
+      card.classList.add('correct-card');
+      card.querySelector('.event-text').innerHTML+=` <span style="color:var(--success);font-weight:700">(${ev.year})</span>`;
+      correctCount++;
+    } else {
+      card.classList.add('wrong-card');
+      card.querySelector('.event-text').innerHTML+=` <span style="color:var(--danger);font-weight:700">(${ev.year} &ndash; rätt plats: ${correct})</span>`;
+    }
+    card.querySelectorAll('.number-btns button').forEach(b=>b.disabled=true);
+  });
+
+  const pts=correctCount*10;
+  if(pts>0) addPoints(pts);
+
+  if(correctCount===NUM_EVENTS){
+    document.getElementById('fbCorrect').textContent='Alla rätt! Imponerande, Buster! Du har koll på hela tidslinjen.';
+    document.getElementById('fbCorrect').classList.add('show');
+    document.getElementById('celebration').textContent='Fantastiskt! +'+pts+' poäng';
+    document.getElementById('celebration').classList.add('show');
+  } else {
+    document.getElementById('fbWrong').textContent=correctCount+' av '+NUM_EVENTS+' rätt. Kolla den rätta ordningen nedan!';
+    document.getElementById('fbWrong').classList.add('show');
+    document.getElementById('celebration').textContent='Bra försök! +'+pts+' poäng';
+    document.getElementById('celebration').classList.add('show');
+  }
+
+  // Show correct order
+  const ol=document.getElementById('correctList');
+  sorted.forEach(ev=>{
+    const li=document.createElement('li');
+    li.textContent=ev.year+' &ndash; '+ev.text;
+    li.innerHTML=`<strong>${ev.year}</strong> &ndash; ${ev.text}`;
+    ol.appendChild(li);
+  });
+  document.getElementById('correctOrderBox').style.display='block';
+
+  document.getElementById('checkBtn').disabled=true;
+  markComplete();
+  saveStats(correctCount, pts);
+}
+
+// Points
+function getPoints(){return parseInt(localStorage.getItem(PREFIX+'points')||'0')}
+function addPoints(n){const p=getPoints()+n;localStorage.setItem(PREFIX+'points',p.toString());updatePointsDisplay();return p;}
+function updatePointsDisplay(){document.getElementById('pointsDisplay').textContent=getPoints()+' p';}
+
+// Progress
+function getProgress(){return JSON.parse(localStorage.getItem(PREFIX+'progress')||'{}')}
+function markComplete(){
+  const p=getProgress();p[PAGE_ID]=true;
+  localStorage.setItem(PREFIX+'progress',JSON.stringify(p));
+  updateNav();
+}
+function saveStats(correct,pts){
+  const stats=JSON.parse(localStorage.getItem(PREFIX+'pageStats')||'{}');
+  stats[PAGE_ID]={time:Math.round((Date.now()-startTime)/1000),correct:correct,total:NUM_EVENTS,points:pts,timestamp:new Date().toISOString()};
+  localStorage.setItem(PREFIX+'pageStats',JSON.stringify(stats));
+}
+
+function updateNav(){
+  const progress=getProgress();
+  const pages=['del5-01','del5-02','del5-03','del5-04','del5-05','del5-06','del5-07','del5-08','del5-quiz'];
+  let done=0;
+  pages.forEach(p=>{
+    const el=document.getElementById('nav-'+p);
+    if(el&&progress[p]){el.classList.add('done');el.querySelector('.icon').innerHTML='&#10003;';done++;}
+  });
+  document.getElementById('progressText').textContent=done+'/'+pages.length;
+  document.getElementById('progressBar').style.width=Math.round(done/pages.length*100)+'%';
+}
+
+function changeSize(d){
+  const el=document.getElementById('contentArea');
+  const current=parseFloat(getComputedStyle(el).fontSize);
+  el.style.fontSize=(current+d*2)+'px';
+}
+
+const pauseMsgs=[
+  {t:'Rör på dig!',m:'Gör 10 armhävningar! Eller spring till köket och tillbaka.'},
+  {t:'Andas!',m:'Stäng ögonen. Andas in i 4 sekunder, håll i 4, andas ut i 4. Gör det 3 gånger.'},
+  {t:'Kolla ut!',m:'Titta ut genom fönstret i 30 sekunder. Kan du se något som rör sig?'},
+  {t:'Sträcka!',m:'Ställ dig upp, sträck armarna över huvudet och böj dig ner mot tårna.'},
+  {t:'Hjärnvila!',m:'Tänk på din favorit-MTB-led. Visualisera hela banan från start till mål.'}
+];
+function showPause(){
+  const msg=pauseMsgs[Math.floor(Math.random()*pauseMsgs.length)];
+  document.getElementById('pauseTitle').textContent=msg.t;
+  document.getElementById('pauseMsg').textContent=msg.m;
+  document.getElementById('pauseOverlay').classList.add('show');
+}
+function closePause(){document.getElementById('pauseOverlay').classList.remove('show')}
+
+function checkPrevious(){
+  const progress=getProgress();
+  if(progress[PAGE_ID]){
+    document.getElementById('celebration').textContent='Du har redan klarat denna sida!';
+    document.getElementById('celebration').classList.add('show');
+  }
+}
+
+updatePointsDisplay();updateNav();renderEvents();checkPrevious();
+</script>
+</body>
+</html>
