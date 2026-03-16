@@ -162,11 +162,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;f
           <div class="tl-slot" id="slot4">5</div>
         </div>
         <div class="tl-buttons" id="tlButtons">
-          <button class="tl-btn" onclick="pickTL(this,0)">Poltava 1709</button>
-          <button class="tl-btn" onclick="pickTL(this,1)">Karl XII blir kung 1697</button>
-          <button class="tl-btn" onclick="pickTL(this,2)">Freden i Nystad 1721</button>
-          <button class="tl-btn" onclick="pickTL(this,3)">Karl XII dör 1718</button>
-          <button class="tl-btn" onclick="pickTL(this,4)">Narva 1700</button>
+          <button class="tl-btn" onclick="pickTL(this,0)">Poltava</button>
+          <button class="tl-btn" onclick="pickTL(this,1)">Karl XII blir kung</button>
+          <button class="tl-btn" onclick="pickTL(this,2)">Freden i Nystad</button>
+          <button class="tl-btn" onclick="pickTL(this,3)">Karl XII dör</button>
+          <button class="tl-btn" onclick="pickTL(this,4)">Narva</button>
         </div>
         <button class="submit-multi" id="tlSubmit" onclick="checkTL()" style="display:none">Kolla svar</button>
         <div class="feedback correct" id="fb1correct">Perfekt ordning! 1697 &rarr; 1700 &rarr; 1709 &rarr; 1718 &rarr; 1721</div>
@@ -233,7 +233,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;f
       <!-- MULTIMODAL 2 -->
       <div class="speech-prompt">
         <span class="speech-icon">&#128483;</span>
-        <strong>Berätta högt för dig själv:</strong> Förklara med egna ord varför Poltava var den viktigaste händelsen under stormaktens fall.
+        <strong>Förklara tyst för dig själv i huvudet:</strong> Varför var Poltava den viktigaste händelsen under stormaktens fall?
         <br><em style="font-size:.8em;color:var(--muted)">(Ingen poäng &ndash; detta är för din egen skull!)</em>
       </div>
 
@@ -307,7 +307,7 @@ function markComplete(){const p=getProgress();p[PAGE_ID]=true;localStorage.setIt
 
 // Timeline sorting
 const tlCorrectOrder=[1,4,0,3,2]; // Karl XII kung, Narva, Poltava, Karl XII dör, Nystad
-const tlLabels=['Poltava 1709','Karl XII blir kung 1697','Freden i Nystad 1721','Karl XII dör 1718','Narva 1700'];
+const tlLabels=['Poltava','Karl XII blir kung','Freden i Nystad','Karl XII dör','Narva'];
 let tlPicked=[];
 let tlDone=false;
 

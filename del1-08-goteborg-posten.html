@@ -143,20 +143,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;f
       <!-- QUESTION -->
       <div class="question-box" id="questionBox">
         <span class="badge badge-a">Nivå A</span>
-        <h3>Hur tror du det var för vanliga tyskar när svenska legoknektar plundrade deras stad?</h3>
-        <p style="font-size:.8em;color:var(--muted);margin-bottom:10px">Skriv minst 15 ord. Försök leva dig in i hur det kändes.</p>
+        <h3>Hur tror du att tidningar och propaganda kunde påverka vad vanliga människor tyckte om krig och kungar?</h3>
+        <p style="font-size:.8em;color:var(--muted);margin-bottom:10px">Skriv minst 15 ord. Tänk på hur information sprids och påverkar.</p>
         <textarea class="open-answer" id="openAnswer" placeholder="Skriv ditt svar här..." oninput="updateWC()"></textarea>
         <div class="word-count" id="wordCount">0 ord (minst 15)</div>
         <button class="submit-open" id="submitBtn" onclick="submitOpen()" disabled>Visa facit</button>
         <button class="hint-btn" onclick="showHint(0)">Ledtråd 1</button>
         <button class="hint-btn" onclick="showHint(1)" style="display:none" id="hintBtn1">Ledtråd 2</button>
-        <div class="hint-box" id="hint0">Tänk på vad du skulle känna om främmande soldater kom till din stad och tog mat, pengar och förstörde saker...</div>
-        <div class="hint-box" id="hint1">Tänk på barn, gamla och sjuka. Hur påverkades de som inte kunde försvara sig?</div>
+        <div class="hint-box" id="hint0">Tänk på hur propaganda fungerade under stormaktstiden &ndash; flygblad, tidningar, smeknamn som "Lejonet från Norden"...</div>
+        <div class="hint-box" id="hint1">Tänk på hur sociala medier och nyheter påverkar vad du tycker idag. Är det samma sak?</div>
         <div class="compare-box" id="compareBox">
           <h4>Ditt svar:</h4>
           <div id="studentAnswer" style="background:#f0f6ff;padding:10px;border-radius:6px;font-size:.9em;margin-bottom:8px"></div>
           <h4>Facit:</h4>
-          <div class="model-answer">Det var fruktansvärt. Vanliga familjer fick se sina hem plundras och brännas. Mat och värdesaker stals. Många blev hemlösa, svalt eller dödades. Barn förlorade föräldrar. Det som var svensk stormaktsglans för den ena sidan var ren terror för den andra. Kriget varade i 30 år &ndash; flera generationer levde hela sina liv i krig.</div>
+          <div class="model-answer">Tidningar och propaganda kunde styra vad folk visste och tyckte. Gustav II Adolf använde flygblad för att framställa sig som en hjälte &ndash; "Lejonet från Norden". Vanliga människor fick bara den ena sidans bild. Precis som idag med sociala medier och nyheter kan information vinklas för att påverka åsikter. Skillnaden är att på 1600-talet kunde de flesta inte ens läsa, så propaganda spreds också muntligt.</div>
           <div class="self-assess" id="selfAssess">
             <p style="font-size:.85em;margin-bottom:8px;font-weight:600">Fick du med det viktiga?</p>
             <button class="yes-btn" onclick="selfAssess(true)">Ja</button>
